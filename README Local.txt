@@ -1,5 +1,5 @@
 
-** ESTE README ES SÓLO PARA TRABAJAR EN LOCAL **
+** ESTE README ES SÓLO PARA DESPLEGAR LA APP EN LOCAL **
 
 ***************************************************************************************************************
 INSTALACIÓN de archivos necesarios para ejecutar CORRECTAMENTE el PROYECTO en LOCAL
@@ -26,15 +26,14 @@ NOTAS:
 		"pnpm install"
 
 ***************************************************************************************************************
-INICIAR la APP
+Desplegar la APP en LOCAL
 ***************************************************************************************************************
 
-[*] Para iniciar la ejecución:
-	ESTANDO En la carpeta del proyecto, ejecutar en "cmd":
+[*] ESTANDO En la carpeta del proyecto, ejecutar en "cmd":
 		"npm run dev" o "pnpm dev"
 
 [*] Ver la APP en ejecucion:
-	http://localhost:3007/
+	http://localhost:3000/
 
 ***************************************************************************************************************
 CREDENCIALES para el LOGIN en MateoTutor
@@ -61,8 +60,7 @@ INSTALAR Subsistema LINUX en Windows (WSL / WSL 2)
 	b) sudo apt upgrade
 
 ***************************************************************************************************************
-INSTALAR DOCKER
-(WINDOWS)
+INSTALAR DOCKER Desktop (WINDOWS)
 ***************************************************************************************************************
 
 [*] Verificar que tenemos Docker instalado:

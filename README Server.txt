@@ -112,6 +112,9 @@ Comandos útiles DOCKER
 	[*] Ver las imagenes EXISTENTES
 		sudo docker images
 
+	[*] Borrar una imagen EXISTENTE
+		sudo docker rmi nombre_imagen:latest
+
 	[*] Ver TODOS los contenedores EXISTENTES
 		sudo docker ps -a
 

@@ -102,7 +102,7 @@ NOTAS:
 
 [*] Para CREAR la imagen:
 	Estando en el MISMO directorio del archivo "Docker", ejecutar en "cmd":
-		docker build -t mateotutorimg .
+		docker build -t mtutorimg .
 
 ***************************************************************************************************************
 Ejecutar un NUEVO CONTAINER basado en una IMAGEN Docker

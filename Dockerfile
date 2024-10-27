@@ -5,7 +5,7 @@ FROM node:20
 RUN npm install -g pnpm
 
 # Clona el repositorio de GitHub desde la rama "frontend"
-RUN git clone --branch frontend-creacion-modificacion https://github.com/learner-model-uach/TutorIntegrado.git /MateoTutor
+RUN git clone --branch frontend-creacion-modificacion https://github.com/fresard22/FrontEnd-MateoTutor.git /MateoTutor
 
 # Establece el directorio de trabajo en el proyecto clonado
 WORKDIR /MateoTutor

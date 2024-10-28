@@ -18,7 +18,7 @@ export default withAuth(function SelectByCode() {
   return (
     <>
       <div>
-        <DQ2 />
+        <DQ2/>
       </div>
 
       <div>

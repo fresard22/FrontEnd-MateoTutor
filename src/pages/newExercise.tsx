@@ -1,5 +1,5 @@
 import { Select, Box, Button, Input, Flex, Text, Stack, Checkbox, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, useDisclosure, Table,Thead,Tbody,Tr,Th,Td,TableContainer,useToast  } from '@chakra-ui/react';
-import { useState,useCallback } from 'react';
+import { useState,useCallback, useEffect } from 'react';
 import React from 'react';
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
 
@@ -18,6 +18,35 @@ export default function NewExercise() {
       respuestas: '' 
     }
   ]);
+
+  // Función para cargar tarjetas desde localStorage
+  const loadFromCache = () => {
+    const cachedData = localStorage.getItem('cardsCache');
+    if (cachedData) {
+      try {
+        const data = JSON.parse(cachedData);
+        setCards(data.cards); // Restaurar tarjetas desde el cache
+      } catch (error) {
+        console.error('Error al parsear el JSON del cache:', error);
+      }
+    }
+  };  
+
+  //guarde en cache
+  const saveToCache = (newCards) => {
+    localStorage.setItem('cardsCache', JSON.stringify({ cards: newCards }));
+  };
+
+  // useEffect para cargar tarjetas desde el cache cuando el componente se monta
+  useEffect(() => {
+    loadFromCache();
+  }, []);
+
+  // useEffect para guardar en cache cada vez que se actualizan las tarjetas
+  useEffect(() => {
+    saveToCache(cards); // Guardar en cache siempre que cambien las tarjetas
+  }, [cards]);
+
   const [currentCardIndex, setCurrentCardIndex] = useState(null); // Índice de la tarjeta seleccionada
   const { isOpen, onOpen, onClose } = useDisclosure(); // Estado del modal
   const { isOpen: isLatexOpen, onOpen: onOpenLatex, onClose: onLatexClose } = useDisclosure();
@@ -191,6 +220,7 @@ const insertLatex = (command) => {
     setExerciseCode(tempExerciseCode);
     setExerciseTopic(tempExerciseTopic);
     alert('Nombre de archivo:\n' + tempExerciseName + 'Código de ejercicio:\n' + tempExerciseCode + 'Tópico de ejercicio:\n' + tempExerciseTopic + 'Tarjetas: ' + JSON.stringify(cards));
+    localStorage.clear();
     onClose();
   };
 

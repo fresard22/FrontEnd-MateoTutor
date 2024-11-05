@@ -81,11 +81,11 @@ NOTAS:
 	- NO es necesario hacer "gitclone" del proyecto, ya que el propio dockerfile lo hace e instala TODO
 
 	[*] Para Ver las imagenes existentes, ejecutar en "bash":
-		docker images
+		sudo docker images
 
 	[*] Para crear una nueva imagen:
 		Estando en el MISMO directorio del archivo "Docker", ejecutar en la terminal:
-			docker build -t mateotutorimg . cmd
+			sudo docker build -t mtutor-img .
 
 ***************************************************************************************************************
 Ejecutar un NUEVO CONTAINER basado en una IMAGEN Docker
@@ -97,7 +97,7 @@ NOTA:
 	- Se pueden ejecutar simultaneamente distintos "contenedores" basados en una misma imagen
 
 [*] Ejecutar en la terminal:
-	docker run --name MateoCont -p 3007:3000 mateotutorimg
+	sudo docker run --name MTutor-app -p 3007:3000 mtutor-img
 
 	- 3007 Es el puerto de la maquina host (server)
 	- 3000 Es el puerto dentro del contenedor Docker
@@ -113,7 +113,7 @@ Comandos útiles DOCKER
 		sudo docker images
 
 	[*] Borrar una imagen EXISTENTE
-		sudo docker rmi nombre_imagen:latest
+		sudo docker rmi mtutor-img:latest
 
 	[*] Ver TODOS los contenedores EXISTENTES
 		sudo docker ps -a

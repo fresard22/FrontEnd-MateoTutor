@@ -229,6 +229,11 @@ const updateHint = (cardIndex, hintIndex, updates) => {
     updatedCards[cardIndex].hints[hintIndex].latex = newValue;
     setCards(updatedCards);
   };
+  const updateMultiplePlaceholdersLatex = (cardIndex, newValue) => {
+    const updatedCards = [...cards];
+    updatedCards[cardIndex].placeholdersLatex = newValue;
+    setCards(updatedCards);
+  };
   
 
   const [selectedTopic, setSelectedTopic] = useState('');
@@ -249,7 +254,23 @@ const updateHint = (cardIndex, hintIndex, updates) => {
     localStorage.clear();
     onClose();
   };
-
+  const updateAlternativeLatex = (cardIndex, altIndex, newValue) => {
+    const updatedCards = [...cards];
+    updatedCards[cardIndex].alternatives[altIndex].latex = newValue;
+    setCards(updatedCards);
+  };
+  const updateAlternative = (cardIndex, altIndex, updates) => {
+    const updatedCards = [...cards];
+    updatedCards[cardIndex].alternatives[altIndex] = { ...updatedCards[cardIndex].alternatives[altIndex], ...updates };
+    setCards(updatedCards);
+  };
+  
+  const updatePlaceholderLatex = (cardIndex, newValue) => {
+    const updatedCards = [...cards];
+    updatedCards[cardIndex].placeholdersLatex = newValue;
+    setCards(updatedCards);
+  };
+  
 
   const saveData = () => {
     alert('Datos a guardar:\n' + 'Tarjetas: ' + JSON.stringify(cards));
@@ -372,58 +393,125 @@ const updateHint = (cardIndex, hintIndex, updates) => {
                   ): card.type === 'singleplaceholder' ? (
                     <>
                       <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
-                        <Text fontWeight="bold" mb={2}>
-                          Single Placeholder
-                        </Text>
-                        <Flex key={index} align="center">
+                        <Text fontWeight="bold" mb={2}>Single Placeholder</Text>
+                        <Flex align="center" mb={4}>
+                          {/* Input para la expresión del placeholder */}
                           <Input
-                            placeholder={`Expresion del placeholder`}
+                            placeholder="Expresión del placeholder"
                             value={card.placeholders}
-                            onChange={(e) => handleCardContentChange(index, 'placeholder', e.target.value)}
+                            onChange={(e) => handleCardContentChange(index, 'placeholders', e.target.value)}
                             bg="white"
                             mr={2}
-                            mb={2}
                           />
-                <Select 
-                  placeholder="Seleccione un metodo correccion" 
-                  value={card.respuestas} 
-                  onChange={(e) => handleCardContentChange(index, 'respuestas', e.target.value)}
-                  bg="white"
+
+                          {/* Selección del método de corrección */}
+                          <Select
+                            placeholder="Seleccione un método de corrección"
+                            value={card.respuestas}
+                            onChange={(e) => handleCardContentChange(index, 'respuestas', e.target.value)}
+                            bg="white"
                             mr={2}
-                            mb={2}
-                  >
-                  <option value="StringComparison">StringComparison</option>
-                  <option value="EvaluateandCount">EvaluateandCount</option>
-                  <option value="Evaluete">Evaluete</option>
-                </Select>
+                          >
+                            <option value="StringComparison">StringComparison</option>
+                            <option value="EvaluateandCount">EvaluateandCount</option>
+                            <option value="Evaluate">Evaluate</option>
+                          </Select>
                         </Flex>
+
+                        {/* CUADRO DE TEXTO PARA LaTeX */}
+                        <Box display="flex" alignItems="center">
+                          {card.isEditingLatex ? (
+                            <Input
+                              id={`latex-placeholder-${index}`}
+                              value={card.placeholdersLatex || ''}
+                              onChange={(e) => updatePlaceholderLatex(index, e.target.value)}
+                              onBlur={() => updateCard(index, { isEditingLatex: false })}
+                              placeholder="Expresión LaTeX para el placeholder"
+                              autoFocus
+                              bg="white"
+                            />
+                          ) : (
+                            <Box
+                              p={2}
+                              mb={2}
+                              bg="white"
+                              borderWidth="1px"
+                              borderRadius="md"
+                              onClick={() => updateCard(index, { isEditingLatex: true })}
+                              cursor="pointer"
+                              flex="1"
+                            >
+                              <MathJax>
+                                {card.placeholdersLatex
+                                  ? `\\(${card.placeholdersLatex}\\)`  // Renderiza LaTeX en color negro
+                                  : <span style={{ color: '#ccd3dd' }}>Expresión</span> // Texto en gris si está vacío
+                                }
+                              </MathJax>
+                            </Box>
+                          )}
+                        </Box>
+                        {/* FIN DEL CUADRO DE TEXTO PARA LaTeX */}
                       </Box>
                     </>
                   ) : card.type === 'multipleplaceholder' ? (
                   <>
                     <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
-                      <Text fontWeight="bold" mb={2}>
-                        Multiple Placeholders
-                      </Text>
-                      <Flex key={index} align="center">
+                      <Text fontWeight="bold" mb={2}>Multiple Placeholders</Text>
+                      <Flex align="center" mb={4}>
+                        {/* Input para la expresión con placeholders */}
                         <Input
-                          placeholder={`Expresion con placeholders`}
+                          placeholder="Expresión con placeholders"
                           value={card.placeholders}
-                          onChange={(e) => handleCardContentChange(index, 'placeholder', e.target.value)}
+                          onChange={(e) => handleCardContentChange(index, 'placeholders', e.target.value)}
                           bg="white"
                           mr={2}
-                          mb={2}
                         />
+
+                        {/* Input para las respuestas separadas por coma */}
                         <Input
-                          placeholder={`Respuestas separadas por coma`}
+                          placeholder="Respuestas separadas por coma"
                           value={card.respuestas}
                           onChange={(e) => handleCardContentChange(index, 'respuestas', e.target.value)}
                           bg="white"
                           mr={2}
-                          mb={2}
                         />
                       </Flex>
+
+                      {/* CUADRO DE TEXTO PARA LaTeX */}
+                      <Box display="flex" alignItems="center">
+                        {card.isEditingLatex ? (
+                          <Input
+                            id={`latex-placeholder-multiple-${index}`}
+                            value={card.placeholdersLatex || ''}
+                            onChange={(e) => updateMultiplePlaceholdersLatex(index, e.target.value)}
+                            onBlur={() => updateCard(index, { isEditingLatex: false })}
+                            placeholder="Expresión LaTeX para placeholders"
+                            autoFocus
+                            bg="white"
+                          />
+                        ) : (
+                          <Box
+                            p={2}
+                            mb={2}
+                            bg="white"
+                            borderWidth="1px"
+                            borderRadius="md"
+                            onClick={() => updateCard(index, { isEditingLatex: true })}
+                            cursor="pointer"
+                            flex="1"
+                          >
+                            <MathJax>
+                              {card.placeholdersLatex
+                                ? `\\(${card.placeholdersLatex}\\)`  // Renderiza LaTeX en color negro
+                                : <span style={{ color: '#ccd3dd' }}>Expresión</span> // Texto en gris si está vacío
+                              }
+                            </MathJax>
+                          </Box>
+                        )}
+                      </Box>
+                      {/* FIN DEL CUADRO DE TEXTO PARA LaTeX */}
                     </Box>
+
                   </>
                 ) : card.type === 'table' ? (
                   <>
@@ -484,31 +572,70 @@ const updateHint = (cardIndex, hintIndex, updates) => {
                     <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
                       <Text fontWeight="bold" mb={2}>Alternativas</Text>
                       {card.alternatives.map((alt, altIndex) => (
-                        <Flex key={altIndex} align="center">
-                          <Input
-                            placeholder={`Alternativa ${altIndex + 1}`}
-                            value={alt.text}
-                            onChange={(e) => handleAlternativeChange(index, altIndex, e.target.value)}
-                            bg="white"
-                            mr={2}
-                            mb={2}
-                          />
-                          <Checkbox
-                            isChecked={alt.correct}
-                            onChange={() => handleCorrectChange(index, altIndex)}
-                            mr={2}
-                          >
-                            Correcta
-                          </Checkbox>
-                          {card.alternatives.length > 2 && (
-                            <Button colorScheme="red" onClick={() => removeAlternative(index, altIndex)}>
-                              🗑️
-                            </Button>
-                          )}
-                        </Flex>
+                        <Box key={altIndex} mb={4}>
+                          {/* Input para el texto de la alternativa */}
+                          <Flex align="center" mb={2}>
+                            <Input
+                              placeholder={`Alternativa ${altIndex + 1}`}
+                              value={alt.text}
+                              onChange={(e) => handleAlternativeChange(index, altIndex, e.target.value)}
+                              bg="white"
+                              mr={2}
+                            />
+                            
+                            <Checkbox
+                              isChecked={alt.correct}
+                              onChange={() => handleCorrectChange(index, altIndex)}
+                              mr={2}
+                            >
+                              Correcta
+                            </Checkbox>
+                            
+                            {card.alternatives.length > 2 && (
+                              <Button colorScheme="red" onClick={() => removeAlternative(index, altIndex)}>
+                                🗑️
+                              </Button>
+                            )}
+                          </Flex>
+
+                          {/* CUADRO DE TEXTO PARA LaTeX */}
+                          <Box display="flex" alignItems="center">
+                            {alt.isEditing ? (
+                              <Input
+                                id={`latex-input-alt-${index}-${altIndex}`}
+                                value={alt.latex || ''}
+                                onChange={(e) => updateAlternativeLatex(index, altIndex, e.target.value)}
+                                onBlur={() => updateAlternative(index, altIndex, { isEditing: false })}
+                                placeholder={`Expresión LaTeX de Alternativa ${altIndex + 1}`}
+                                autoFocus
+                                bg="white"
+                              />
+                            ) : (
+                              <Box
+                                p={2}
+                                mb={2}
+                                bg="white"
+                                borderWidth="1px"
+                                borderRadius="md"
+                                onClick={() => updateAlternative(index, altIndex, { isEditing: true })}
+                                cursor="pointer"
+                                flex="1"
+                              >
+                                <MathJax>
+                                  {alt.latex
+                                    ? `\\(${alt.latex}\\)` // Renderiza LaTeX en color negro
+                                    : <span style={{ color: '#ccd3dd' }}>Expresión</span> // Texto en gris si está vacío
+                                  }
+                                </MathJax>
+                              </Box>
+                            )}
+                          </Box>
+                          {/* FIN DEL CUADRO DE TEXTO PARA LaTeX */}
+                        </Box>
                       ))}
                       <Button mt={4} onClick={() => addAlternative(index)}>Agregar alternativa</Button>
                     </Box>
+
                     
                   </>
                 )}

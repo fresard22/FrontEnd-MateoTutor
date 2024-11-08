@@ -1,6 +1,15 @@
-import { Select, Box, Button, Input, Flex, Text, Stack, Checkbox, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, useDisclosure, Table,Thead,Tbody,Tr,Th,Td,TableContainer,useToast  } from '@chakra-ui/react';
-import { useState,useCallback, useEffect } from 'react';
+import {
+  Select, Box, Button, Input, Flex, Text, Stack, Checkbox, Modal, 
+  ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, 
+  ModalCloseButton, useDisclosure, Table, Thead, Tbody, Tr, Th, Td, 
+  TableContainer, useToast 
+} from '@chakra-ui/react';
+
+import { useState, useEffect, useCallback } from 'react';
+
 import React from 'react';
+
+// Si prefieres MathJax
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
 
 export default function NewExercise() {
@@ -126,6 +135,15 @@ const insertLatex = (command) => {
     }));
     setCards(updatedCards);
   };
+  // Actualiza el valor de LaTeX o alterna el modo de edición
+const updateHint = (cardIndex, hintIndex, updates) => {
+  const updatedCards = [...cards];
+  updatedCards[cardIndex].hints[hintIndex] = { ...updatedCards[cardIndex].hints[hintIndex], ...updates };
+  setCards(updatedCards);
+};
+
+
+
   const handleTrueFalseChange = (index, option) => {
     const updatedCards = [...cards];
     if (option === 'trueOption') {
@@ -205,6 +223,14 @@ const insertLatex = (command) => {
     const updatedCards = cards.filter((_, i) => i !== index);
     setCards(updatedCards);
   };
+  // Definición de la función handleExpressionChange
+  const updateHintLatex = (cardIndex, hintIndex, newValue) => {
+    const updatedCards = [...cards];
+    updatedCards[cardIndex].hints[hintIndex].latex = newValue;
+    setCards(updatedCards);
+  };
+  
+
   const [selectedTopic, setSelectedTopic] = useState('');
   const [selectedSubtopic, setSelectedSubtopic] = useState('');
   const [exerciseName, setExerciseName] = useState('');
@@ -490,26 +516,61 @@ const insertLatex = (command) => {
               {card.type !== 'enunciado' && (
                 <Box flex="1" w="100%">
                 <Box mb={4} p={4} bg="orange.300" borderRadius="md" boxShadow="md">
-                        <Text fontWeight="bold" mb={2}>Pistas</Text>
-                        {card.hints.map((hint, hintIndex) => (
-                          <Flex key={hintIndex} align="center">
-                            <Input
-                              placeholder={`Pista ${hintIndex + 1}`}
-                              value={hint.text}
-                              onChange={(e) => handleHintChange(index, hintIndex, e.target.value)}
-                              bg="white"
-                              mr={2}
-                              mb={2}
-                            />
-                            {card.hints.length > 2 && (
-                              <Button colorScheme="red" onClick={() => removeHints(index, hintIndex)}>
-                                🗑️
-                              </Button>
-                            )}
-                          </Flex>
-                        ))}
-                        <Button mt={4} onClick={() => addHints(index)}>Agregar pista</Button>
-                      </Box>
+                  <Text fontWeight="bold" mb={2}>Pistas</Text>
+                  {card.hints.map((hint, hintIndex) => (
+                    <Box key={hintIndex} mb={4}>
+                      {/* Input para el enunciado de la pista */}
+                      <Input
+                        placeholder={`Enunciado de Pista ${hintIndex + 1}`}
+                        value={hint.text}
+                        onChange={(e) => handleHintChange(index, hintIndex, e.target.value)}
+                        bg="white"
+                        mb={2}
+                      />
+                    {/* CUADRO DE TEXTO PARA LaTeX */}
+                    <Box display="flex" alignItems="center">
+                      {hint.isEditing ? (
+                        <Input
+                          id={`latex-input-${index}-${hintIndex}`}
+                          value={hint.latex || ''}
+                          onChange={(e) => updateHintLatex(index, hintIndex, e.target.value)}
+                          onBlur={() => updateHint(index, hintIndex, { isEditing: false })}
+                          placeholder={`Expresión LaTeX de Pista ${hintIndex + 1}`}
+                          autoFocus
+                          bg="white"
+                        />
+                      ) : (
+                        <Box
+                          p={2}
+                          mb={2}
+                          bg="white"
+                          borderWidth="1px"
+                          borderRadius="md"
+                          onClick={() => updateHint(index, hintIndex, { isEditing: true })}
+                          cursor="pointer"
+                          flex="1"
+                        >
+                          <MathJax>
+                            {hint.latex
+                              ? `\\(${hint.latex}\\)` // Renderiza LaTeX en color negro
+                              : <span style={{ color: '#ccd3dd' }}>Expresión</span> // Texto en gris si está vacío
+                            }
+                          </MathJax>
+                        </Box>
+                      )}
+                    </Box>
+                    {/* FIN DEL CUADRO DE TEXTO PARA LaTeX */}
+
+                      {/* Botón para eliminar la pista */}
+                      {card.hints.length > 2 && (
+                        <Button colorScheme="red" mt={2} onClick={() => removeHints(index, hintIndex)}>
+                          🗑️
+                        </Button>
+                      )}
+                    </Box>
+                  ))}
+                  <Button mt={4} onClick={() => addHints(index)}>Agregar pista</Button>
+                </Box>
                       {/* Demas imputs */}
                       
                       <Input

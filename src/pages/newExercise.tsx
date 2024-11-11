@@ -1,16 +1,8 @@
-import {
-  Select, Box, Button, Input, Flex, Text, Stack, Checkbox, Modal, 
-  ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, 
-  ModalCloseButton, useDisclosure, Table, Thead, Tbody, Tr, Th, Td, 
-  TableContainer, useToast 
-} from '@chakra-ui/react';
-
-import { useState, useEffect, useCallback } from 'react';
-
+import { Select, Box, Button, Input, Flex, Text, Stack, Checkbox, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, useDisclosure, Table,Thead,Tbody,Tr,Th,Td,TableContainer,useToast  } from '@chakra-ui/react';
+import { useState,useCallback,useEffect } from 'react';
 import React from 'react';
-
-// Si prefieres MathJax
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
+import { generarEjercicioJSON, descargarJSON } from './jsonTransform';
 
 export default function NewExercise() {
   const [cards, setCards] = useState([
@@ -27,35 +19,6 @@ export default function NewExercise() {
       respuestas: '' 
     }
   ]);
-
-  // Función para cargar tarjetas desde localStorage
-  const loadFromCache = () => {
-    const cachedData = localStorage.getItem('cardsCache');
-    if (cachedData) {
-      try {
-        const data = JSON.parse(cachedData);
-        setCards(data.cards); // Restaurar tarjetas desde el cache
-      } catch (error) {
-        console.error('Error al parsear el JSON del cache:', error);
-      }
-    }
-  };  
-
-  //guarde en cache
-  const saveToCache = (newCards) => {
-    localStorage.setItem('cardsCache', JSON.stringify({ cards: newCards }));
-  };
-
-  // useEffect para cargar tarjetas desde el cache cuando el componente se monta
-  useEffect(() => {
-    loadFromCache();
-  }, []);
-
-  // useEffect para guardar en cache cada vez que se actualizan las tarjetas
-  useEffect(() => {
-    saveToCache(cards); // Guardar en cache siempre que cambien las tarjetas
-  }, [cards]);
-
   const [currentCardIndex, setCurrentCardIndex] = useState(null); // Índice de la tarjeta seleccionada
   const { isOpen, onOpen, onClose } = useDisclosure(); // Estado del modal
   const { isOpen: isLatexOpen, onOpen: onOpenLatex, onClose: onLatexClose } = useDisclosure();
@@ -135,15 +98,6 @@ const insertLatex = (command) => {
     }));
     setCards(updatedCards);
   };
-  // Actualiza el valor de LaTeX o alterna el modo de edición
-const updateHint = (cardIndex, hintIndex, updates) => {
-  const updatedCards = [...cards];
-  updatedCards[cardIndex].hints[hintIndex] = { ...updatedCards[cardIndex].hints[hintIndex], ...updates };
-  setCards(updatedCards);
-};
-
-
-
   const handleTrueFalseChange = (index, option) => {
     const updatedCards = [...cards];
     if (option === 'trueOption') {
@@ -220,21 +174,12 @@ const updateHint = (cardIndex, hintIndex, updates) => {
     }
   };
   const deleteCard = (index) => {
-    const updatedCards = cards.filter((_, i) => i !== index);
-    setCards(updatedCards);
-  };
-  // Definición de la función handleExpressionChange
-  const updateHintLatex = (cardIndex, hintIndex, newValue) => {
-    const updatedCards = [...cards];
-    updatedCards[cardIndex].hints[hintIndex].latex = newValue;
-    setCards(updatedCards);
-  };
-  const updateMultiplePlaceholdersLatex = (cardIndex, newValue) => {
-    const updatedCards = [...cards];
-    updatedCards[cardIndex].placeholdersLatex = newValue;
-    setCards(updatedCards);
-  };
-  
+    const isConfirmed = window.confirm('¿Realmente deseas eliminar este paso?');
+    if (isConfirmed){
+      const updatedCards = cards.filter((_, i) => i !== index);
+      setCards(updatedCards);
+    }
+  }; 
 
   const [selectedTopic, setSelectedTopic] = useState('');
   const [selectedSubtopic, setSelectedSubtopic] = useState('');
@@ -246,31 +191,36 @@ const updateHint = (cardIndex, hintIndex, updates) => {
   const [tempExerciseTopic, setTempExerciseTopic] = useState('');
   const { isOpen: isModal2Open, onOpen: onModal2Open, onClose: onModal2Close } = useDisclosure();
   const [activeModal, setActiveModal] = React.useState(null);
+  // const handleSave = () => {
+  //   setExerciseName(tempExerciseName);
+  //   setExerciseCode(tempExerciseCode);
+  //   setExerciseTopic(tempExerciseTopic);
+  //   alert('Nombre de archivo:\n' + tempExerciseName + 'Código de ejercicio:\n' + tempExerciseCode + 'Tópico de ejercicio:\n' + tempExerciseTopic + 'Tarjetas: ' + JSON.stringify(cards));
+  //   onClose();
+  // };
+
+  /*const handleSave = () => {
+    const fileData = JSON.stringify(cards, null, 2); // Convierte las cards a formato JSON
+    const blob = new Blob([fileData], { type: 'application/json' }); // Crea un blob con el contenido JSON
+    const url = URL.createObjectURL(blob); // Genera una URL temporal
+    const link = document.createElement('a'); // Crea un enlace
+    link.href = url;
+    link.download = 'cards.json'; // Nombre del archivo a descargar
+    document.body.appendChild(link);
+    link.click(); // Simula el clic para descargar el archivo
+    document.body.removeChild(link); // Limpia el DOM
+  };*/
+
+  useEffect(() => {
+    // Imprime el contenido de cards cuando el componente se monta o cuando cards cambia
+    console.log("Contenido de cards:", cards);
+  }, [cards]);
+
   const handleSave = () => {
-    setExerciseName(tempExerciseName);
-    setExerciseCode(tempExerciseCode);
-    setExerciseTopic(tempExerciseTopic);
-    alert('Nombre de archivo:\n' + tempExerciseName + 'Código de ejercicio:\n' + tempExerciseCode + 'Tópico de ejercicio:\n' + tempExerciseTopic + 'Tarjetas: ' + JSON.stringify(cards));
-    localStorage.clear();
-    onClose();
-  };
-  const updateAlternativeLatex = (cardIndex, altIndex, newValue) => {
-    const updatedCards = [...cards];
-    updatedCards[cardIndex].alternatives[altIndex].latex = newValue;
-    setCards(updatedCards);
-  };
-  const updateAlternative = (cardIndex, altIndex, updates) => {
-    const updatedCards = [...cards];
-    updatedCards[cardIndex].alternatives[altIndex] = { ...updatedCards[cardIndex].alternatives[altIndex], ...updates };
-    setCards(updatedCards);
-  };
-  
-  const updatePlaceholderLatex = (cardIndex, newValue) => {
-    const updatedCards = [...cards];
-    updatedCards[cardIndex].placeholdersLatex = newValue;
-    setCards(updatedCards);
-  };
-  
+    const ejercicioJSON = generarEjercicioJSON(cards, tempExerciseCode);
+    descargarJSON(ejercicioJSON, "ejercicio.json");
+};
+
 
   const saveData = () => {
     alert('Datos a guardar:\n' + 'Tarjetas: ' + JSON.stringify(cards));
@@ -281,7 +231,7 @@ const updateHint = (cardIndex, hintIndex, updates) => {
   const handleButtonClick = useCallback((cardIndex, answerIndex) => {
     setCards((prevCards) => {
       const updatedCards = [...prevCards];
-      const currentRespuestas = updatedCards[cardIndex].respuestas;
+      const currentRespuestas = updatedCards[cardIndex].respuestas|| [];
       currentRespuestas[answerIndex] = currentRespuestas[answerIndex] === 'V' ? 'F' : 'V'; // Toggle value
       return updatedCards;
     });
@@ -385,133 +335,66 @@ const updateHint = (cardIndex, hintIndex, updates) => {
                   <>
                     <Input
                       placeholder={`Contenido del enunciado`}
-                      value={card.content}
-                      onChange={(e) => handleCardContentChange(index, 'content', e.target.value)}
+                      value={card.title}
+                      onChange={(e) => handleCardContentChange(index, 'title', e.target.value)}
                       bg="white"
                     />
                   </>
                   ): card.type === 'singleplaceholder' ? (
                     <>
                       <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
-                        <Text fontWeight="bold" mb={2}>Single Placeholder</Text>
-                        <Flex align="center" mb={4}>
-                          {/* Input para la expresión del placeholder */}
+                        <Text fontWeight="bold" mb={2}>
+                          Single Placeholder
+                        </Text>
+                        <Flex key={index} align="center">
                           <Input
-                            placeholder="Expresión del placeholder"
+                            placeholder={`Expresion del placeholder`}
                             value={card.placeholders}
-                            onChange={(e) => handleCardContentChange(index, 'placeholders', e.target.value)}
+                            onChange={(e) => handleCardContentChange(index, 'placeholder', e.target.value)}
                             bg="white"
                             mr={2}
+                            mb={2}
                           />
-
-                          {/* Selección del método de corrección */}
-                          <Select
-                            placeholder="Seleccione un método de corrección"
-                            value={card.respuestas}
-                            onChange={(e) => handleCardContentChange(index, 'respuestas', e.target.value)}
-                            bg="white"
+                <Select 
+                  placeholder="Seleccione un metodo correccion" 
+                  value={card.respuestas} 
+                  onChange={(e) => handleCardContentChange(index, 'respuestas', e.target.value)}
+                  bg="white"
                             mr={2}
-                          >
-                            <option value="StringComparison">StringComparison</option>
-                            <option value="EvaluateandCount">EvaluateandCount</option>
-                            <option value="Evaluate">Evaluate</option>
-                          </Select>
+                            mb={2}
+                  >
+                  <option value="StringComparison">StringComparison</option>
+                  <option value="EvaluateandCount">EvaluateandCount</option>
+                  <option value="Evaluete">Evaluete</option>
+                </Select>
                         </Flex>
-
-                        {/* CUADRO DE TEXTO PARA LaTeX */}
-                        <Box display="flex" alignItems="center">
-                          {card.isEditingLatex ? (
-                            <Input
-                              id={`latex-placeholder-${index}`}
-                              value={card.placeholdersLatex || ''}
-                              onChange={(e) => updatePlaceholderLatex(index, e.target.value)}
-                              onBlur={() => updateCard(index, { isEditingLatex: false })}
-                              placeholder="Expresión LaTeX para el placeholder"
-                              autoFocus
-                              bg="white"
-                            />
-                          ) : (
-                            <Box
-                              p={2}
-                              mb={2}
-                              bg="white"
-                              borderWidth="1px"
-                              borderRadius="md"
-                              onClick={() => updateCard(index, { isEditingLatex: true })}
-                              cursor="pointer"
-                              flex="1"
-                            >
-                              <MathJax>
-                                {card.placeholdersLatex
-                                  ? `\\(${card.placeholdersLatex}\\)`  // Renderiza LaTeX en color negro
-                                  : <span style={{ color: '#ccd3dd' }}>Expresión</span> // Texto en gris si está vacío
-                                }
-                              </MathJax>
-                            </Box>
-                          )}
-                        </Box>
-                        {/* FIN DEL CUADRO DE TEXTO PARA LaTeX */}
                       </Box>
                     </>
                   ) : card.type === 'multipleplaceholder' ? (
                   <>
                     <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
-                      <Text fontWeight="bold" mb={2}>Multiple Placeholders</Text>
-                      <Flex align="center" mb={4}>
-                        {/* Input para la expresión con placeholders */}
+                      <Text fontWeight="bold" mb={2}>
+                        Multiple Placeholders
+                      </Text>
+                      <Flex key={index} align="center">
                         <Input
-                          placeholder="Expresión con placeholders"
+                          placeholder={`Expresion con placeholders`}
                           value={card.placeholders}
-                          onChange={(e) => handleCardContentChange(index, 'placeholders', e.target.value)}
+                          onChange={(e) => handleCardContentChange(index, 'placeholder', e.target.value)}
                           bg="white"
                           mr={2}
+                          mb={2}
                         />
-
-                        {/* Input para las respuestas separadas por coma */}
                         <Input
-                          placeholder="Respuestas separadas por coma"
+                          placeholder={`Respuestas separadas por coma`}
                           value={card.respuestas}
                           onChange={(e) => handleCardContentChange(index, 'respuestas', e.target.value)}
                           bg="white"
                           mr={2}
+                          mb={2}
                         />
                       </Flex>
-
-                      {/* CUADRO DE TEXTO PARA LaTeX */}
-                      <Box display="flex" alignItems="center">
-                        {card.isEditingLatex ? (
-                          <Input
-                            id={`latex-placeholder-multiple-${index}`}
-                            value={card.placeholdersLatex || ''}
-                            onChange={(e) => updateMultiplePlaceholdersLatex(index, e.target.value)}
-                            onBlur={() => updateCard(index, { isEditingLatex: false })}
-                            placeholder="Expresión LaTeX para placeholders"
-                            autoFocus
-                            bg="white"
-                          />
-                        ) : (
-                          <Box
-                            p={2}
-                            mb={2}
-                            bg="white"
-                            borderWidth="1px"
-                            borderRadius="md"
-                            onClick={() => updateCard(index, { isEditingLatex: true })}
-                            cursor="pointer"
-                            flex="1"
-                          >
-                            <MathJax>
-                              {card.placeholdersLatex
-                                ? `\\(${card.placeholdersLatex}\\)`  // Renderiza LaTeX en color negro
-                                : <span style={{ color: '#ccd3dd' }}>Expresión</span> // Texto en gris si está vacío
-                              }
-                            </MathJax>
-                          </Box>
-                        )}
-                      </Box>
-                      {/* FIN DEL CUADRO DE TEXTO PARA LaTeX */}
                     </Box>
-
                   </>
                 ) : card.type === 'table' ? (
                   <>
@@ -572,70 +455,31 @@ const updateHint = (cardIndex, hintIndex, updates) => {
                     <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
                       <Text fontWeight="bold" mb={2}>Alternativas</Text>
                       {card.alternatives.map((alt, altIndex) => (
-                        <Box key={altIndex} mb={4}>
-                          {/* Input para el texto de la alternativa */}
-                          <Flex align="center" mb={2}>
-                            <Input
-                              placeholder={`Alternativa ${altIndex + 1}`}
-                              value={alt.text}
-                              onChange={(e) => handleAlternativeChange(index, altIndex, e.target.value)}
-                              bg="white"
-                              mr={2}
-                            />
-                            
-                            <Checkbox
-                              isChecked={alt.correct}
-                              onChange={() => handleCorrectChange(index, altIndex)}
-                              mr={2}
-                            >
-                              Correcta
-                            </Checkbox>
-                            
-                            {card.alternatives.length > 2 && (
-                              <Button colorScheme="red" onClick={() => removeAlternative(index, altIndex)}>
-                                🗑️
-                              </Button>
-                            )}
-                          </Flex>
-
-                          {/* CUADRO DE TEXTO PARA LaTeX */}
-                          <Box display="flex" alignItems="center">
-                            {alt.isEditing ? (
-                              <Input
-                                id={`latex-input-alt-${index}-${altIndex}`}
-                                value={alt.latex || ''}
-                                onChange={(e) => updateAlternativeLatex(index, altIndex, e.target.value)}
-                                onBlur={() => updateAlternative(index, altIndex, { isEditing: false })}
-                                placeholder={`Expresión LaTeX de Alternativa ${altIndex + 1}`}
-                                autoFocus
-                                bg="white"
-                              />
-                            ) : (
-                              <Box
-                                p={2}
-                                mb={2}
-                                bg="white"
-                                borderWidth="1px"
-                                borderRadius="md"
-                                onClick={() => updateAlternative(index, altIndex, { isEditing: true })}
-                                cursor="pointer"
-                                flex="1"
-                              >
-                                <MathJax>
-                                  {alt.latex
-                                    ? `\\(${alt.latex}\\)` // Renderiza LaTeX en color negro
-                                    : <span style={{ color: '#ccd3dd' }}>Expresión</span> // Texto en gris si está vacío
-                                  }
-                                </MathJax>
-                              </Box>
-                            )}
-                          </Box>
-                          {/* FIN DEL CUADRO DE TEXTO PARA LaTeX */}
-                        </Box>
+                        <Flex key={altIndex} align="center">
+                          <Input
+                            placeholder={`Alternativa ${altIndex + 1}`}
+                            value={alt.text}
+                            onChange={(e) => handleAlternativeChange(index, altIndex, e.target.value)}
+                            bg="white"
+                            mr={2}
+                            mb={2}
+                          />
+                          <Checkbox
+                            isChecked={alt.correct}
+                            onChange={() => handleCorrectChange(index, altIndex)}
+                            mr={2}
+                          >
+                            Correcta
+                          </Checkbox>
+                          {card.alternatives.length > 2 && (
+                            <Button colorScheme="red" onClick={() => removeAlternative(index, altIndex)}>
+                              🗑️
+                            </Button>
+                          )}
+                        </Flex>
                       ))}
                       <Button mt={4} onClick={() => addAlternative(index)}>Agregar alternativa</Button>
                     </Box>
-
                     
                   </>
                 )}
@@ -643,61 +487,26 @@ const updateHint = (cardIndex, hintIndex, updates) => {
               {card.type !== 'enunciado' && (
                 <Box flex="1" w="100%">
                 <Box mb={4} p={4} bg="orange.300" borderRadius="md" boxShadow="md">
-                  <Text fontWeight="bold" mb={2}>Pistas</Text>
-                  {card.hints.map((hint, hintIndex) => (
-                    <Box key={hintIndex} mb={4}>
-                      {/* Input para el enunciado de la pista */}
-                      <Input
-                        placeholder={`Enunciado de Pista ${hintIndex + 1}`}
-                        value={hint.text}
-                        onChange={(e) => handleHintChange(index, hintIndex, e.target.value)}
-                        bg="white"
-                        mb={2}
-                      />
-                    {/* CUADRO DE TEXTO PARA LaTeX */}
-                    <Box display="flex" alignItems="center">
-                      {hint.isEditing ? (
-                        <Input
-                          id={`latex-input-${index}-${hintIndex}`}
-                          value={hint.latex || ''}
-                          onChange={(e) => updateHintLatex(index, hintIndex, e.target.value)}
-                          onBlur={() => updateHint(index, hintIndex, { isEditing: false })}
-                          placeholder={`Expresión LaTeX de Pista ${hintIndex + 1}`}
-                          autoFocus
-                          bg="white"
-                        />
-                      ) : (
-                        <Box
-                          p={2}
-                          mb={2}
-                          bg="white"
-                          borderWidth="1px"
-                          borderRadius="md"
-                          onClick={() => updateHint(index, hintIndex, { isEditing: true })}
-                          cursor="pointer"
-                          flex="1"
-                        >
-                          <MathJax>
-                            {hint.latex
-                              ? `\\(${hint.latex}\\)` // Renderiza LaTeX en color negro
-                              : <span style={{ color: '#ccd3dd' }}>Expresión</span> // Texto en gris si está vacío
-                            }
-                          </MathJax>
-                        </Box>
-                      )}
-                    </Box>
-                    {/* FIN DEL CUADRO DE TEXTO PARA LaTeX */}
-
-                      {/* Botón para eliminar la pista */}
-                      {card.hints.length > 2 && (
-                        <Button colorScheme="red" mt={2} onClick={() => removeHints(index, hintIndex)}>
-                          🗑️
-                        </Button>
-                      )}
-                    </Box>
-                  ))}
-                  <Button mt={4} onClick={() => addHints(index)}>Agregar pista</Button>
-                </Box>
+                        <Text fontWeight="bold" mb={2}>Pistas</Text>
+                        {card.hints.map((hint, hintIndex) => (
+                          <Flex key={hintIndex} align="center">
+                            <Input
+                              placeholder={`Pista ${hintIndex + 1}`}
+                              value={hint.text}
+                              onChange={(e) => handleHintChange(index, hintIndex, e.target.value)}
+                              bg="white"
+                              mr={2}
+                              mb={2}
+                            />
+                            {card.hints.length > 2 && (
+                              <Button colorScheme="red" onClick={() => removeHints(index, hintIndex)}>
+                                🗑️
+                              </Button>
+                            )}
+                          </Flex>
+                        ))}
+                        <Button mt={4} onClick={() => addHints(index)}>Agregar pista</Button>
+                      </Box>
                       {/* Demas imputs */}
                       
                       <Input

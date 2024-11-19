@@ -92,8 +92,8 @@ const insertLatex = (command) => {
       setCards([...cards, { type: 'verdadero/falso', title: '', question: '', expression: '', summary: '', successMessage: '', trueOption: false, falseOption: false, hints: [{ text: ''}, { text: ''}],kcs: ''}]);
     } else if (newCardType === 'multipleplaceholder') {
       setCards([...cards, {type: 'multipleplaceholder', title: '', question: '', expression: '', summary: '', successMessage: '', placeholders: '', respuestas: '' ,hints: [{ text: ''}, { text: ''}],kcs: ''}]);
-    }else if (newCardType === 'singleplaceholder') {
-      setCards([...cards, {type: 'singleplaceholder', title: '', question: '', expression: '', summary: '', successMessage: '', placeholders: '', respuestas: '' ,hints: [{ text: ''}, { text: ''}],kcs: ''}]);
+    }else if (newCardType === 'blank') {
+      setCards([...cards, {type: 'blank', title: '', question: '', expression: '', summary: '', successMessage: '', placeholders: '', respuestas: '' ,hints: [{ text: ''}, { text: ''}],kcs: ''}]);
     }
     else if (newCardType === 'table') {
       setCards([...cards, {type: 'table', title: '', question: '', expression: '', summary: '', successMessage: '', respuestas: new Array(4).fill('') ,hints: [{ text: ''}, { text: ''}],kcs: ''}]);
@@ -178,7 +178,7 @@ const insertLatex = (command) => {
         return 'purple.200';     
       case 'multipleplaceholder':
         return 'orange.200';
-      case 'singleplaceholder':
+      case 'blank':
         return 'red.200';
         case 'table':
           return 'blue.400';
@@ -195,9 +195,9 @@ const insertLatex = (command) => {
       case 'verdadero/falso':
         return 'Verdadero/Falso';
       case 'multipleplaceholder':
-        return 'Multiple placeholders';
-      case 'singleplaceholder':
-        return 'Single placeholder';
+        return 'Placeholders';
+      case 'blank':
+        return 'Blank';
         case 'table':
           return 'Tabla de verdad';
       default:
@@ -412,15 +412,15 @@ const insertLatex = (command) => {
                       bg="white"
                     />
                   </>
-                  ): card.type === 'singleplaceholder' ? (
+                  ): card.type === 'blank' ? (
                     <>
                       <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
                         <Text fontWeight="bold" mb={2}>
-                          Single Placeholder
+                          Blank
                         </Text>
                         <Flex key={index} align="center">
                           <Input
-                            placeholder={`Expresion del placeholder`}
+                            placeholder={`Expresion del ejercicio`}
                             bg="white"
                             mr={2}
                             mb={2}
@@ -433,7 +433,7 @@ const insertLatex = (command) => {
                   >
                   <option value="StringComparison">StringComparison</option>
                   <option value="EvaluateandCount">EvaluateandCount</option>
-                  <option value="Evaluate">Evaluete</option>
+                  <option value="Evaluate">Evaluate</option>
                 </Select>
                         </Flex>
                       </Box>
@@ -442,7 +442,7 @@ const insertLatex = (command) => {
                   <>
                     <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
                       <Text fontWeight="bold" mb={2}>
-                        Multiple Placeholders
+                        Placeholders
                       </Text>
                       <Flex key={index} align="center">
                         <Input
@@ -458,6 +458,16 @@ const insertLatex = (command) => {
                           mb={2}
                         />
                       </Flex>
+                      <Select 
+                  placeholder="Seleccione un metodo correccion" 
+                  bg="white"
+                            mr={2}
+                            mb={2}
+                  >
+                  <option value="StringComparison">StringComparison</option>
+                  <option value="EvaluateandCount">EvaluateandCount</option>
+                  <option value="Evaluate">Evaluate</option>
+                </Select>
                     </Box>
                   </>
                 ) : card.type === 'table' ? (
@@ -632,8 +642,8 @@ const insertLatex = (command) => {
                 <Select value={newCardType} onChange={(e) => setNewCardType(e.target.value)}>
                   <option value="alternativas">Paso de alternativas</option>
                   <option value="verdadero/falso">Paso de verdadero/falso</option>
-                  <option value="singleplaceholder">Paso de single placeholder</option>
-                  <option value="multipleplaceholder">Paso de multiple placeholders</option>
+                  <option value="blank">Paso de blank</option>
+                  <option value="multipleplaceholder">Paso de placeholders</option>
                   <option value="table">Paso de tabla de verdad</option>
                 </Select> 
               </ModalBody>

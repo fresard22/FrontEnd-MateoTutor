@@ -459,13 +459,13 @@ const insertLatex = (command) => {
                         />
                       </Flex>
                       <Select 
-                  placeholder="Seleccione un metodo correccion" 
+                  placeholder="Seleccione un metodo de corrección" 
                   bg="white"
                             mr={2}
                             mb={2}
                   >
-                  <option value="StringComparison">StringComparison</option>
-                  <option value="EvaluateandCount">EvaluateandCount</option>
+                  <option value="StringComparison">String Comparison</option>
+                  <option value="EvaluateandCount">Evaluate and Count</option>
                   <option value="Evaluate">Evaluate</option>
                 </Select>
                     </Box>

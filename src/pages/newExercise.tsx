@@ -100,7 +100,7 @@ const insertLatex = (command) => {
     }
     onClose();
   };
-  const handleCardContentChange = (index, field, newContent) => {
+  /*const handleCardContentChange = (index, field, newContent) => {
     const updatedCards = [...cards];
     updatedCards[index][field] = newContent;
     setCards(updatedCards);
@@ -120,7 +120,7 @@ const insertLatex = (command) => {
       text: index === altIndex ? newContent : alt.text,
     }));
     setCards(updatedCards);
-  };
+  };*/
   const handleCorrectChange = (cardIndex, altIndex) => {
     const updatedCards = [...cards];
     updatedCards[cardIndex].alternatives = updatedCards[cardIndex].alternatives.map((alt, index) => ({
@@ -222,25 +222,7 @@ const insertLatex = (command) => {
   const [tempExerciseTopic, setTempExerciseTopic] = useState('');
   const { isOpen: isModal2Open, onOpen: onModal2Open, onClose: onModal2Close } = useDisclosure();
   const [activeModal, setActiveModal] = React.useState(null);
-  // const handleSave = () => {
-  //   setExerciseName(tempExerciseName);
-  //   setExerciseCode(tempExerciseCode);
-  //   setExerciseTopic(tempExerciseTopic);
-  //   alert('Nombre de archivo:\n' + tempExerciseName + 'Código de ejercicio:\n' + tempExerciseCode + 'Tópico de ejercicio:\n' + tempExerciseTopic + 'Tarjetas: ' + JSON.stringify(cards));
-  //   onClose();
-  // };
-
-  /*const handleSave = () => {
-    const fileData = JSON.stringify(cards, null, 2); // Convierte las cards a formato JSON
-    const blob = new Blob([fileData], { type: 'application/json' }); // Crea un blob con el contenido JSON
-    const url = URL.createObjectURL(blob); // Genera una URL temporal
-    const link = document.createElement('a'); // Crea un enlace
-    link.href = url;
-    link.download = 'cards.json'; // Nombre del archivo a descargar
-    document.body.appendChild(link);
-    link.click(); // Simula el clic para descargar el archivo
-    document.body.removeChild(link); // Limpia el DOM
-  };*/
+ 
 
   useEffect(() => {
     // Imprime el contenido de cards cuando el componente se monta o cuando cards cambia
@@ -248,10 +230,71 @@ const insertLatex = (command) => {
   }, [cards]);
 
   const handleSave = () => {
-    const ejercicioJSON = generarEjercicioJSON(cards, tempExerciseCode);
+    const updatedCards = cards.map((card, index) => {
+    
+      const titleInput = document.querySelector(`#card-title-${index}`);
+      const questionInput = document.querySelector(`#card-question-${index}`);
+      const latexInput = document.querySelector(`#card-latex-${index}`);
+      const summaryInput = document.querySelector(`#card-summary-${index}`);
+      const successMessageInput = document.querySelector(`#card-success-message-${index}`);
+      const kcsInput = document.querySelector(`#card-kcs-${index}`);
+
+      
+      return {
+        ...card,
+        title: titleInput ? titleInput.value : card.title,
+        question: questionInput ? questionInput.value : card.question,
+        latex: latexInput ? latexInput.value : card.latex,
+        summary: summaryInput ? summaryInput.value : card.summary,
+        successMessage: successMessageInput ? successMessageInput.value : card.successMessage,
+        kcs: kcsInput ? kcsInput.value : card.kcs,
+        
+        
+        ...(card.type === 'alternativas' && {
+          alternatives: card.alternatives.map((alt, altIndex) => ({
+            ...alt,
+            text: document.querySelector(`#card-alternative-${index}-${altIndex}`)?.value || alt.text
+          }))
+        }),
+        ...(card.type === 'verdadero/falso' && {
+          trueOption: card.trueOption,
+          falseOption: card.falseOption
+        }),
+        ...(card.type === 'singleplaceholder' && {
+          placeholders: document.querySelector(`#card-placeholder-${index}`)?.value || card.placeholders,
+          respuestas: document.querySelector(`#card-respuestas-${index}`)?.value || card.respuestas
+        }),
+        ...(card.type === 'multipleplaceholder' && {
+          placeholders: document.querySelector(`#card-placeholder-${index}`)?.value || card.placeholders,
+          respuestas: document.querySelector(`#card-respuestas-${index}`)?.value || card.respuestas
+        }),
+        ...(card.type === 'table' && {
+          respuestas: card.respuestas
+        }),
+        
+        
+        hints: card.hints.map((hint, hintIndex) => ({
+          ...hint,
+          text: document.querySelector(`#card-hint-${index}-${hintIndex}`)?.value || hint.text
+        }))
+      };
+    });
+
+
+    const exerciseNameInput = document.querySelector('#exercise-name-input');
+    const exerciseCodeInput = document.querySelector('#exercise-code-input');
+    const exerciseTopicSelect = document.querySelector('#exercise-topic-select');
+
+    const ejercicioJSON = generarEjercicioJSON(
+      updatedCards, 
+      exerciseCodeInput ? exerciseCodeInput.value : exerciseCode,
+      exerciseNameInput ? exerciseNameInput.value : exerciseName,
+      exerciseTopicSelect ? exerciseTopicSelect.value : exerciseTopic
+    );
+
     descargarJSON(ejercicioJSON, "ejercicio.json");
     localStorage.clear();
-};
+  };
 
 
   const saveData = () => {
@@ -276,6 +319,7 @@ const insertLatex = (command) => {
     { P: 'F', Q: 'F' },
   ];
 
+  console.log("render")
   return (
     <MathJaxContext> 
       <div>
@@ -312,16 +356,14 @@ const insertLatex = (command) => {
               {card.type != 'enunciado' ? (
   <>
     <Input
+      id={`card-title-${index}`}
       placeholder="Titulo del paso"
-      value={card.title}
-      onChange={(e) => handleCardContentChange(index, 'title', e.target.value)}
       bg="white"
       mb={2}
     />
     <Input
+    id={`card-question-${index}`}
       placeholder={`Pregunta del paso`}
-      value={card.question}
-      onChange={(e) => handleCardContentChange(index, 'question', e.target.value)}
       bg="white"
       mb={2}
     />
@@ -329,14 +371,14 @@ const insertLatex = (command) => {
               <Box display="flex" alignItems="center">
                 {card.isEditing ? (
                   <Input
-                    id={`latex-input-${index}`}
-                    value={card.latex || ''}
-                    onChange={(e) => updateCard(index, { latex: e.target.value })}
-                    onBlur={() => updateCard(index, { isEditing: false })}
-                    placeholder={`Contenido en LaTeX tarjeta`} 
-                    autoFocus
-                    bg="white"
-                  />
+                  id={`latex-input-${index}`}
+                  value={card.latex || ''}
+                  onChange={(e) => updateCard(index, { latex: e.target.value })}
+                  onBlur={() => updateCard(index, { isEditing: false })}
+                  placeholder={`Contenido en LaTeX tarjeta`} 
+                  autoFocus
+                  bg="white"
+                />
                 ) : (
                   <Box 
                     p={2} 
@@ -367,8 +409,6 @@ const insertLatex = (command) => {
                   <>
                     <Input
                       placeholder={`Contenido del enunciado`}
-                      value={card.title}
-                      onChange={(e) => handleCardContentChange(index, 'title', e.target.value)}
                       bg="white"
                     />
                   </>
@@ -381,23 +421,19 @@ const insertLatex = (command) => {
                         <Flex key={index} align="center">
                           <Input
                             placeholder={`Expresion del placeholder`}
-                            value={card.placeholders}
-                            onChange={(e) => handleCardContentChange(index, 'placeholder', e.target.value)}
                             bg="white"
                             mr={2}
                             mb={2}
                           />
                 <Select 
                   placeholder="Seleccione un metodo correccion" 
-                  value={card.respuestas} 
-                  onChange={(e) => handleCardContentChange(index, 'respuestas', e.target.value)}
                   bg="white"
                             mr={2}
                             mb={2}
                   >
                   <option value="StringComparison">StringComparison</option>
                   <option value="EvaluateandCount">EvaluateandCount</option>
-                  <option value="Evaluete">Evaluete</option>
+                  <option value="Evaluate">Evaluete</option>
                 </Select>
                         </Flex>
                       </Box>
@@ -411,16 +447,12 @@ const insertLatex = (command) => {
                       <Flex key={index} align="center">
                         <Input
                           placeholder={`Expresion con placeholders`}
-                          value={card.placeholders}
-                          onChange={(e) => handleCardContentChange(index, 'placeholder', e.target.value)}
                           bg="white"
                           mr={2}
                           mb={2}
                         />
                         <Input
                           placeholder={`Respuestas separadas por coma`}
-                          value={card.respuestas}
-                          onChange={(e) => handleCardContentChange(index, 'respuestas', e.target.value)}
                           bg="white"
                           mr={2}
                           mb={2}
@@ -489,9 +521,9 @@ const insertLatex = (command) => {
                       {card.alternatives.map((alt, altIndex) => (
                         <Flex key={altIndex} align="center">
                           <Input
+                            key={altIndex}
+                            id={`card-alternative-${index}-${altIndex}`}
                             placeholder={`Alternativa ${altIndex + 1}`}
-                            value={alt.text}
-                            onChange={(e) => handleAlternativeChange(index, altIndex, e.target.value)}
                             bg="white"
                             mr={2}
                             mb={2}
@@ -523,9 +555,9 @@ const insertLatex = (command) => {
                         {card.hints.map((hint, hintIndex) => (
                           <Flex key={hintIndex} align="center">
                             <Input
+                              key={hintIndex}
+                              id={`card-hint-${index}-${hintIndex}`}
                               placeholder={`Pista ${hintIndex + 1}`}
-                              value={hint.text}
-                              onChange={(e) => handleHintChange(index, hintIndex, e.target.value)}
                               bg="white"
                               mr={2}
                               mb={2}
@@ -542,23 +574,20 @@ const insertLatex = (command) => {
                       {/* Demas imputs */}
                       
                       <Input
+                        id={`card-summary-${index}`}
                         placeholder="Resumen del paso"
-                        value={card.summary}
-                        onChange={(e) => handleCardContentChange(index, 'summary', e.target.value)}
                         bg="white"
                         mb={4}
                       />
                       <Input
+                        id={`card-succes-message-${index}`}
                         placeholder="Mensaje de éxito"
-                        value={card.successMessage}
-                        onChange={(e) => handleCardContentChange(index, 'successMessage', e.target.value)}
                         bg="white"
                         mb={4}
                       />
                       <Input
+                        id={`card-kcs-${index}`}
                         placeholder="Kc's del ejercicio"
-                        value={card.kcs}
-                        onChange={(e) => handleCardContentChange(index, 'kcs', e.target.value)}
                         bg="white"
                         mb={4}
                       />
@@ -625,16 +654,12 @@ const insertLatex = (command) => {
                     <Text width="200px">Nombre Del Ejercicio:</Text>
                     <Input 
                       placeholder="Nombre Del Ejercicio" 
-                      value={tempExerciseName} 
-                      onChange={(e) => setTempExerciseName(e.target.value)} 
                     />
                   </Flex>
                   <Flex align="center">
                     <Text width="200px">Código Del Ejercicio:</Text>
                     <Input 
                       placeholder="Código Del Ejercicio" 
-                      value={tempExerciseCode} 
-                      onChange={(e) => setTempExerciseCode(e.target.value)} 
                     />
                   </Flex>
                   <Flex align="center">
@@ -642,7 +667,6 @@ const insertLatex = (command) => {
                     <Select 
                       placeholder="Seleccione un Tópico" 
                       value={tempExerciseTopic} 
-                      onChange={(e) => setTempExerciseTopic(e.target.value)} 
                     >
                       <option value="Factorización">Factorización</option>
                       <option value="Lógica y Conjuntos">Lógica y Conjuntos</option>
@@ -671,8 +695,6 @@ const insertLatex = (command) => {
                 {/* Input de LaTeX dentro del modal */}
                 <Input
                   id={`latex-input-${currentCardIndex}`}
-                  value={cards[currentCardIndex]?.latex || ''}
-                  onChange={(e) => updateCard(currentCardIndex, { latex: e.target.value })}
                   mb={3}
                 />
                 {/* Botones para insertar comandos LaTeX */}

@@ -1,0 +1,302 @@
+ID: P05
+Modulo: Previsualizacion
+
+Titulo: Previsualizar ejercicio desde un json
+
+Descripcion: Se debe poder previsualizar el ejercicio como lo veria un alumno
+
+Precondiciones:
+- el usuario esta registrado y logueado en el sistema con la cuenta email: nicole.navarro@uach.cl contraseña: 123456
+
+Pasos para reproducir:
+1. hacer click en crear ejercicio
+2. escribir en el enunciado "tituloen"
+3. hacer click en agregar tarjeta
+4. seleccionar paso de alternativas y despues click en boton azul agregar
+5. rellenar el campo titulo del paso con "tp"
+6. rellenar el campo pregunta del paso con "pp"
+7. rellenar las alternativas 1 y 2 con "a" y "b" respectivamente
+8. seleccionar la alternativa a como correcta
+9. rellenar las pistas como "p1" y "p2" respectivamente
+10. rellenar resumen del paso con "rr"
+11. rellenar mensaje de exito con "ex"
+12. rellenar Kcs del ejercicio con "kcs"
+13. seleccionar guardar ejercicio
+14. rellenar nombre del ejercicio con "ej"
+15. rellenar codigo del ejercicio con "code1"
+16. seleccionar topico de factorizacion
+17. hacer click en guardar descargando el json del ejercicio recien creado
+18. hacer click en cancelar
+19. hacer click al lado izq en previsualizar
+20. hacer click en seleccionar archivo
+21. seleccionar "ejercicio.json" descargado en el paso 17
+22. hacer click en "b"
+23. hacer click en pista
+
+Resultado esperado:
+El ejercicio se muestra con los campos rellenados tal cual se creo el ejercicio como si lo viera un alumno y con la expresion de latex mostrando "Expresionpordefectoenunciado"
+
+
+Resultado obtenido:
+en vez del titulo del "ej" se muestra titulo por defecto
+se muestra bien el enunciado "tituloen"
+tambien se uestra bien Expresionpordefectoenunciado de latex asi como las alternativas y cual es la correcta
+el titulo del paso se muestra como "tp"
+se muestran las p1 p2 de las pistas pero no el mensaje de exito o resumen del paso
+ademas salen pop ups rojos con el texto "Error while sending Action to API (this message is only seen in Development Mode)
+Forbidden!"
+
+Estado: No aprobado
+
+
+
+ID: P06
+Modulo: Asignacion de KCs
+
+Titulo: Comprobar lista de KCs
+
+Descripcion: Comprobar el desplegable con la lista de los Kcs
+
+Precondiciones:
+- el usuario esta registrado y logueado en el sistema con la cuenta email: nicole.navarro@uach.cl contraseña: 123456
+
+Pasos para reproducir:
+1. hacer click en Alternativas
+2. hacer click en Agregar tarjeta tipo paso
+3. bajar y hacer click en el boton KC
+4. hacer click en selecciona KC
+
+Resultado esperado:
+se despliega una lista con los kCs: KC1, KC2, KC3, IdeTerSem, FaccTerSem, Añadir KC
+
+
+Resultado obtenido:
+Se despliega una lista con las opciones KC1, KC2, KC3, IdeTerSem, FaccTerSem, Añadir KC ademas de la opcion por defecto selecciona KC
+
+
+Estado: Aprobado
+
+
+
+ID: P07
+Modulo: Asignacion de KCs
+
+Titulo: Buscar KC
+
+Descripcion: Comprobar si se puede buscar un KC
+
+Precondiciones:
+- el usuario esta registrado y logueado en el sistema con la cuenta email: nicole.navarro@uach.cl contraseña: 123456
+
+Pasos para reproducir:
+1. hacer click en Alternativas
+2. hacer click en Agregar tarjeta tipo paso
+3. bajar y hacer click en el boton KC
+4. en el campo buscar KC en la lista escribir "facc"
+5. hacer click en selecciona KC
+
+Resultado esperado:
+en vez de mostrar toda la lista de KCs debe mostrar el KC FaccTerSem
+
+
+Resultado obtenido:
+se despliega una lista con el KC FaccTerSem ademas de las opcion Añadir KC y la opcion por defecto selecciona KC
+
+
+Estado: Aprobado
+
+
+ID: P08
+Modulo: Previsualizacion
+
+Titulo: Previsualizar un ejercicio con 2 pasos distintos sin texto
+
+Descripcion: Se debe poder previsualizar el ejercicio sin ningun texto solo la estructura de los 2 pasos
+
+Precondiciones:
+- el usuario esta registrado y logueado en el sistema con la cuenta email: nicole.navarro@uach.cl contraseña: 123456
+
+Pasos para reproducir:
+1. hacer click en crear ejercicio
+2. hacer click en agregar tarjeta
+3. seleccionar paso de alternativas y despues click en boton azul agregar
+4. seleccionar paso de tabla de verdad y despues click en boton azul agregar
+5. seleccionar guardar ejercicio
+6. hacer click en guardar descargando el json del ejercicio recien creado
+7. hacer click en cancelar
+8. hacer click al lado izq en previsualizar
+9. hacer click en seleccionar archivo
+10. seleccionar "ejercicio.json" descargado en el paso 6
+
+Resultado esperado:
+El ejercicio se muestra con la estructura del paso de alternativas y luego la estrcutura del paso de tablas de verdad todo esto con los titulos por defecto o en su caso sin texto alguno
+
+
+Resultado obtenido:
+se visualiza solo la estructura del paso de alternativas y no la de la tabla de verdad y si seleccionas cualquiera de las "alternativas" vacias nos da un error "Unhandled Runtime Error
+TypeError: Cannot read properties of undefined (reading 'nextStep')"
+
+Estado: No aprobado
+
+
+ID: P9
+Modulo: Previsualizacion
+
+Titulo: Previsualizar un ejercicio con tabla de verdad
+
+Descripcion: Verificar la previsualizacion de la tabla de verdad
+
+Precondiciones:
+- el usuario esta registrado y logueado en el sistema con la cuenta email: nicole.navarro@uach.cl contraseña: 123456
+
+Pasos para reproducir:
+1. hacer click en crear ejercicio
+2. hacer click en agregar tarjeta
+3. seleccionar paso de tabla de verdad y despues click en boton azul agregar
+4. seleccionar guardar ejercicio
+5. hacer click en guardar descargando el json del ejercicio recien creado
+6. hacer click en cancelar
+7. hacer click al lado izq en previsualizar
+8. hacer click en seleccionar archivo
+9. seleccionar "ejercicio.json" descargado en el paso 5
+
+Resultado esperado:
+El ejercicio se muestra con la estructura del paso de la tabla de verdad
+
+Resultado obtenido:
+nos da inmediatamente el error "Unhandled Runtime Error
+TypeError: Cannot read properties of undefined (reading 'nextStep')"
+
+lo cual puede indicar que el problema de la prueba ID: P08 se trata solamente por tratar de cargar la previsualizacion de la tabla de verdad
+
+Estado: No aprobado
+
+
+ID: P10
+Modulo: Previsualizacion
+
+Titulo: Previsualizar un ejercicio con verdadero/falso
+
+Descripcion: Verificar la previsualizacion del paso verdadero/falso
+
+Precondiciones:
+- el usuario esta registrado y logueado en el sistema con la cuenta email: nicole.navarro@uach.cl contraseña: 123456
+
+Pasos para reproducir:
+1. hacer click en crear ejercicio
+2. hacer click en agregar tarjeta
+3. seleccionar paso de verdadero/falso y despues click en boton azul agregar
+4. seleccionar guardar ejercicio
+5. hacer click en guardar descargando el json del ejercicio recien creado
+6. hacer click en cancelar
+7. hacer click al lado izq en previsualizar
+8. hacer click en seleccionar archivo
+9. seleccionar "ejercicio.json" descargado en el paso 5
+
+Resultado esperado:
+El ejercicio se muestra con la estructura del paso de verdadero/falso
+
+Resultado obtenido:
+nos da inmediatamente el error "Unhandled Runtime Error
+TypeError: Cannot read properties of undefined (reading 'nextStep')"
+
+Estado: No aprobado
+
+
+ID: P11
+Modulo: Previsualizacion
+
+Titulo: Previsualizar un ejercicio con Single placeholder
+
+Descripcion: Verificar la previsualizacion del paso Single placeholder
+
+Precondiciones:
+- el usuario esta registrado y logueado en el sistema con la cuenta email: nicole.navarro@uach.cl contraseña: 123456
+
+Pasos para reproducir:
+1. hacer click en crear ejercicio
+2. hacer click en agregar tarjeta
+3. seleccionar paso de Single placeholder y despues click en boton azul agregar
+4. seleccionar guardar ejercicio
+5. hacer click en guardar descargando el json del ejercicio recien creado
+6. hacer click en cancelar
+7. hacer click al lado izq en previsualizar
+8. hacer click en seleccionar archivo
+9. seleccionar "ejercicio.json" descargado en el paso 5
+
+Resultado esperado:
+El ejercicio se muestra con la estructura del paso de Single placeholder
+
+Resultado obtenido:
+nos da inmediatamente el error "Unhandled Runtime Error
+TypeError: Cannot read properties of undefined (reading 'nextStep')"
+
+Estado: No aprobado
+
+
+ID: P12
+Modulo: Previsualizacion
+
+Titulo: Previsualizar un ejercicio con Multiple placeholders
+
+Descripcion: Verificar la previsualizacion del paso Multiple placeholders
+
+Precondiciones:
+- el usuario esta registrado y logueado en el sistema con la cuenta email: nicole.navarro@uach.cl contraseña: 123456
+
+Pasos para reproducir:
+1. hacer click en crear ejercicio
+2. hacer click en agregar tarjeta
+3. seleccionar paso de Multiple placeholders y despues click en boton azul agregar
+4. seleccionar guardar ejercicio
+5. hacer click en guardar descargando el json del ejercicio recien creado
+6. hacer click en cancelar
+7. hacer click al lado izq en previsualizar
+8. hacer click en seleccionar archivo
+9. seleccionar "ejercicio.json" descargado en el paso 5
+
+Resultado esperado:
+El ejercicio se muestra con la estructura del paso de Multiple placeholders
+
+Resultado obtenido:
+nos da inmediatamente el error "Unhandled Runtime Error
+TypeError: Cannot read properties of undefined (reading 'nextStep')"
+
+Estado: No aprobado
+
+
+
+
+ID: P13
+Modulo: Previsualizacion
+
+Titulo: Previsualizar un ejercicio con 2 pasos de alternativas
+
+Descripcion: Verificar la previsualizacion de un ejercicio con 2 pasos de alternativas
+
+Precondiciones:
+- el usuario esta registrado y logueado en el sistema con la cuenta email: nicole.navarro@uach.cl contraseña: 123456
+
+Pasos para reproducir:
+1. hacer click en crear ejercicio
+2. hacer click en agregar tarjeta
+3. seleccionar paso de alternativas y despues click en boton azul agregar
+4. repetir los pasos 2 y 3
+5. rellenar el titulo del primer paso con "paso at 1"
+6. rellenar el titulo del segundo paso con "paso at 2"
+7. seleccionar guardar ejercicio
+8. hacer click en guardar descargando el json del ejercicio recien creado
+9. hacer click en cancelar
+10. hacer click al lado izq en previsualizar
+11. hacer click en seleccionar archivo
+12. seleccionar "ejercicio.json" descargado en el paso 8
+13. hacer click en alguna alternativa vacia
+
+Resultado esperado:
+El ejercicio se muestra el primer paso con "paso at 1" y luego de clickear alguna alternativa carga el siguiente paso con el titulo "paso at 2"
+
+Resultado obtenido:
+se muestra el "paso at 1" correctamente y luego de cleckear en alguna alternativa la tomara como buena y se despliega el "paso at 2" correctamente 
+
+Estado: Aprobado
+

@@ -14,6 +14,7 @@ export default function NewExercise() {
       summary: '', 
       successMessage: '', 
       latex: '', // Este campo debe estar presente y vacío
+      blank: '',
       alternatives: [{ text: '', correct: false }, { text: '', correct: false }], 
       hints: [{ text: '' }, { text: '' }], 
       respuestas: '' 
@@ -68,21 +69,74 @@ export default function NewExercise() {
   const updateCard = (index, updatedProps) => {
     setCards(cards.map((card, i) => (i === index ? { ...card, ...updatedProps } : card)));
   };
-const insertLatex = (command) => {
-  if (currentCardIndex !== null) {
-    const inputElement = document.getElementById(`latex-input-${currentCardIndex}`);
-    if (inputElement) {
-      const startPos = inputElement.selectionStart;
-      const endPos = inputElement.selectionEnd;
-      const currentLatex = cards[currentCardIndex]?.latex || '';
-      const updatedLatex = currentLatex.slice(0, startPos) + command + currentLatex.slice(endPos);
-      updateCard(currentCardIndex, { latex: updatedLatex });
-      setTimeout(() => {
-        inputElement.selectionStart = inputElement.selectionEnd = startPos + command.length;
-      }, 0);
+  const insertLatex = (command) => {
+    if (currentCardIndex !== null) {
+      if (isPlaceholderActive) {
+        // Actualiza el campo LaTeX de Placeholders
+        const currentLatex = cards[currentCardIndex]?.placeholders || '';
+        const updatedLatex = `${currentLatex}${command}`;
+        setCards((prevCards) =>
+          prevCards.map((card, index) =>
+            index === currentCardIndex
+              ? { ...card, placeholders: updatedLatex }
+              : card
+          )
+        );
+      } else if (activeHintIndex !== null) {
+        // Actualiza el campo LaTeX de la pista activa
+        const currentLatex = cards[currentCardIndex]?.hints[activeHintIndex]?.latex || '';
+        const updatedLatex = `${currentLatex}${command}`;
+        setCards((prevCards) =>
+          prevCards.map((card, index) =>
+            index === currentCardIndex
+              ? {
+                  ...card,
+                  hints: card.hints.map((hint, hintIndex) =>
+                    hintIndex === activeHintIndex ? { ...hint, latex: updatedLatex } : hint
+                  ),
+                }
+              : card
+          )
+        );
+      } else if (activeAlternativeIndex !== null) {
+        // Actualiza el campo LaTeX de la alternativa activa
+        const currentLatex = cards[currentCardIndex]?.alternatives[activeAlternativeIndex]?.latex || '';
+        const updatedLatex = `${currentLatex}${command}`;
+        setCards((prevCards) =>
+          prevCards.map((card, index) =>
+            index === currentCardIndex
+              ? {
+                  ...card,
+                  alternatives: card.alternatives.map((alt, altIndex) =>
+                    altIndex === activeAlternativeIndex ? { ...alt, latex: updatedLatex } : alt
+                  ),
+                }
+              : card
+          )
+        );
+      } else if (isBlankActive) {
+        // Actualiza el campo LaTeX del "Blank"
+        const currentLatex = cards[currentCardIndex]?.blank || '';
+        const updatedLatex = `${currentLatex}${command}`;
+        setCards((prevCards) =>
+          prevCards.map((card, index) =>
+            index === currentCardIndex ? { ...card, blank: updatedLatex } : card
+          )
+        );
+      } else {
+        // Actualiza el campo LaTeX del enunciado (por defecto)
+        const currentLatex = cards[currentCardIndex]?.latex || '';
+        const updatedLatex = `${currentLatex}${command}`;
+        setCards((prevCards) =>
+          prevCards.map((card, index) =>
+            index === currentCardIndex ? { ...card, latex: updatedLatex } : card
+          )
+        );
+      }
     }
-  }
-};
+  };
+  
+  
   const toast = useToast();
   const [newCardType, setNewCardType] = useState('alternativas');
   const addCard = () => {
@@ -319,6 +373,37 @@ const insertLatex = (command) => {
     { P: 'F', Q: 'F' },
   ];
 
+  {/*Para la funcion del modal con el campo INICIO */}
+  const [isPlaceholderActive, setIsPlaceholderActive] = useState(false); // Controla si el campo Placeholders está activo
+  const [isBlankActive, setIsBlankActive] = useState(false); // Indica si el campo Blank está activo
+  const [activeHintIndex, setActiveHintIndex] = useState(null); // Para las pistas
+  const [activeAlternativeIndex, setActiveAlternativeIndex] = useState(null); // Para las alternativas
+
+  const updateHint = (cardIndex, hintIndex, updatedFields) => {
+    const updatedCards = [...cards];
+    updatedCards[cardIndex].hints[hintIndex] = {
+      ...updatedCards[cardIndex].hints[hintIndex],
+      ...updatedFields,
+    };
+    setCards(updatedCards);
+  };
+  
+  const updateAlternative = (cardIndex, altIndex, updatedValues) => {
+    setCards((prevCards) =>
+      prevCards.map((card, cIndex) =>
+        cIndex === cardIndex
+          ? {
+              ...card,
+              alternatives: card.alternatives.map((alt, aIndex) =>
+                aIndex === altIndex ? { ...alt, ...updatedValues } : alt
+              ),
+            }
+          : card
+      )
+    );
+  };
+  {/*Para la funcion del modal con el campo FIN */}
+
   console.log("render")
   return (
     <MathJaxContext> 
@@ -368,37 +453,46 @@ const insertLatex = (command) => {
       mb={2}
     />
               {/* CUADRO DE TEXTO PARA LATEX (INICIO)*/}
-              <Box display="flex" alignItems="center">
-                {card.isEditing ? (
-                  <Input
-                  id={`latex-input-${index}`}
-                  value={card.latex || ''}
-                  onChange={(e) => updateCard(index, { latex: e.target.value })}
-                  onBlur={() => updateCard(index, { isEditing: false })}
-                  placeholder={`Contenido en LaTeX tarjeta`} 
-                  autoFocus
-                  bg="white"
-                />
-                ) : (
-                  <Box 
-                    p={2} 
-                    mb={2}
-                    bg="white"
-                    borderWidth="1px" 
-                    borderRadius="md" 
-                    onClick={() => updateCard(index, { isEditing: true })} 
-                    cursor="pointer" 
-                    flex="1"
-                  >
-                    <MathJax>
-                    {card.latex 
-                      ? `\\(${card.latex}\\)` // Expresión LaTeX en color negro
-                      : <span style={{ color: '#ccd3dd' }}> Expresión</span> // Texto "Expresión" en color gris
-                    }
-                    </MathJax>
-                  </Box>
-                )}
-                <Button size="xs" ml={2} onClick={() => { setCurrentCardIndex(index); onOpenLatex(); }}>?</Button>
+              {/* CUADRO DE TEXTO PARA LATEX (INICIO)*/}
+              <Box mb={2}>
+                <Box display="flex" alignItems="center">
+                  {card.isEditing ? (
+                    <Input
+                      placeholder="Expresión"
+                      value={card.latex || ''}
+                      onChange={(e) => updateCard(index, { latex: e.target.value })}
+                      onBlur={() => updateCard(index, { isEditing: false })}
+                      bg="white"
+                      flex="1"
+                      mb={0}
+                      fontSize="md" // Tamaño igual al placeholder
+                      fontFamily="body" // Fuente consistente
+                      color="black"
+                      _placeholder={{ color: "#ccd3dd", fontSize: "md" }} // Placeholder con color gris claro
+                    />
+                  ) : (
+                    <Box
+                      bg="white"
+                      borderWidth="1px"
+                      borderRadius="md"
+                      cursor="pointer"
+                      flex="1"
+                      px={4} // Padding horizontal similar al Input
+                      py={2} // Padding vertical similar al Input
+                      fontSize="md" // Igual tamaño de fuente que el Input
+                      fontFamily="body" // Misma fuente
+                      color={card.latex ? "black" : "#ccd3dd"} // Color dinámico: gris claro o negro
+                      onClick={() => updateCard(index, { isEditing: true })}
+                    >
+                      {card.latex ? (
+                        <MathJax>{`\\(${card.latex}\\)`}</MathJax> // Renderiza LaTeX si existe contenido
+                      ) : (
+                        "Expresión" // Texto fijo "Expresión"
+                      )}
+                    </Box>
+                  )}
+                <Button size="xs" ml={2} onClick={() => (setCurrentCardIndex(index), onOpenLatex())}>?</Button>
+                </Box>
               </Box>
               {/* CUADRO DE TEXTO PARA LATEX (FIN) */}
   </> 
@@ -414,61 +508,179 @@ const insertLatex = (command) => {
                   </>
                   ): card.type === 'blank' ? (
                     <>
-                      <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
-                        <Text fontWeight="bold" mb={2}>
-                          Blank
-                        </Text>
-                        <Flex key={index} align="center">
-                          <Input
-                            placeholder={`Expresion del ejercicio`}
-                            bg="white"
-                            mr={2}
-                            mb={2}
-                          />
-                <Select 
-                  placeholder="Seleccione un metodo correccion" 
-                  bg="white"
-                            mr={2}
-                            mb={2}
-                  >
-                  <option value="StringComparison">StringComparison</option>
-                  <option value="EvaluateandCount">EvaluateandCount</option>
-                  <option value="Evaluate">Evaluate</option>
-                </Select>
+                    <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
+                      <Text fontWeight="bold" mb={2}>
+                        Blank
+                      </Text>
+                      <Flex key={index} align="center" gap={2}>
+                        {/* Campo LaTeX para expresión del ejercicio */}
+                        <Flex align="center" gap={2} flex="1">
+                          {card.isEditingBlank ? (
+                            <Input
+                              id={`blank-latex-${index}`}
+                              placeholder="Expresión LaTeX"
+                              value={card.blank || ''}
+                              onChange={(e) => updateCard(index, { blank: e.target.value })}
+                              onBlur={() => updateCard(index, { isEditingBlank: false })}
+                              bg="white"
+                              fontSize="sm"
+                              color="black"
+                              flex="1"
+                            />
+                          ) : (
+                            <Box
+                              bg="white"
+                              borderWidth="1px"
+                              borderRadius="md"
+                              px={3}
+                              py={2}
+                              cursor="pointer"
+                              flex="1"
+                              onClick={() => updateCard(index, { isEditingBlank: true })}
+                            >
+                              {card.blank ? (
+                                <MathJax>{`\\(${card.blank}\\)`}</MathJax>
+                              ) : (
+                                <Text color="gray.500" fontSize="sm">Haz clic para agregar expresión</Text>
+                              )}
+                            </Box>
+                          )}
+                          {/* Botón para abrir el modal de ayuda LaTeX */}
+                          <Button
+                            size="xs"
+                            onClick={() => {
+                              setCurrentCardIndex(index); // Índice actual de la tarjeta
+                              setIsBlankActive(true); // Indica que estamos trabajando con Blank
+                              onOpenLatex(); // Abre el modal
+                            }}
+                            aria-label="Abrir ayuda LaTeX para Blank"
+                          >
+                            ?
+                          </Button>
                         </Flex>
-                      </Box>
+
+                        {/* Selector para método de corrección */}
+                        <Select
+                          placeholder="Seleccione un método de corrección"
+                          bg="white"
+                          flex="1"
+                        >
+                          <option value="StringComparison">StringComparison</option>
+                          <option value="EvaluateandCount">EvaluateandCount</option>
+                          <option value="Evaluate">Evaluate</option>
+                        </Select>
+                      </Flex>
+                    </Box>
                     </>
                   ) : card.type === 'multipleplaceholder' ? (
                   <>
-                    <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
-                      <Text fontWeight="bold" mb={2}>
-                        Placeholders
-                      </Text>
-                      <Flex key={index} align="center">
-                        <Input
-                          placeholder={`Expresion con placeholders`}
-                          bg="white"
-                          mr={2}
-                          mb={2}
-                        />
-                        <Input
-                          placeholder={`Respuestas separadas por coma`}
-                          bg="white"
-                          mr={2}
-                          mb={2}
-                        />
+                  <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
+                    <Text fontWeight="bold" mb={2}>
+                      Placeholders
+                    </Text>
+                    <Flex key={index} align="center" gap={2}>
+                      {/* Campo LaTeX para expresión con placeholders */}
+                      <Flex align="center" gap={2} flex="1">
+                        {card.isEditingPlaceholders ? (
+                          <Input
+                            placeholder="Expresión con placeholders"
+                            value={card.placeholders || ''}
+                            onChange={(e) =>
+                              setCards((prevCards) =>
+                                prevCards.map((c, i) =>
+                                  i === index ? { ...c, placeholders: e.target.value } : c
+                                )
+                              )
+                            }
+                            onBlur={() =>
+                              setCards((prevCards) =>
+                                prevCards.map((c, i) =>
+                                  i === index ? { ...c, isEditingPlaceholders: false } : c
+                                )
+                              )
+                            }
+                            bg="white"
+                            fontSize="sm"
+                            color="black"
+                            flex="1"
+                          />
+                        ) : (
+                          <Box
+                            bg="white"
+                            borderWidth="1px"
+                            borderRadius="md"
+                            px={3}
+                            py={2}
+                            cursor="pointer"
+                            flex="1"
+                            onClick={() =>
+                              setCards((prevCards) =>
+                                prevCards.map((c, i) =>
+                                  i === index ? { ...c, isEditingPlaceholders: true } : c
+                                )
+                              )
+                            }
+                          >
+                            {card.placeholders ? (
+                              <MathJax>{`\\(${card.placeholders}\\)`}</MathJax>
+                            ) : (
+                              <Text color="gray.500" fontSize="sm">
+                                Haz clic para agregar expresión
+                              </Text>
+                            )}
+                          </Box>
+                        )}
+                        {/* Botón para abrir el modal de ayuda LaTeX */}
+                        <Button
+                          size="xs"
+                          onClick={() => {
+                            setCurrentCardIndex(index);
+                            setIsBlankActive(false); // Por si otros campos están activos
+                            setActiveAlternativeIndex(null); // Por si otros campos están activos
+                            setActiveHintIndex(null); // Por si otros campos están activos
+                            setIsPlaceholderActive(true); // Activamos el campo placeholders
+                            onOpenLatex();
+                          }}
+                          aria-label="Abrir ayuda LaTeX para Placeholders"
+                        >
+                          ?
+                        </Button>
                       </Flex>
-                      <Select 
-                  placeholder="Seleccione un metodo de corrección" 
-                  bg="white"
-                            mr={2}
-                            mb={2}
-                  >
-                  <option value="StringComparison">String Comparison</option>
-                  <option value="EvaluateandCount">Evaluate and Count</option>
-                  <option value="Evaluate">Evaluate</option>
-                </Select>
-                    </Box>
+
+                      {/* Campo para ingresar respuestas separadas por coma */}
+                      <Input
+                        placeholder="Respuestas separadas por coma"
+                        value={card.respuestas || ''}
+                        onChange={(e) =>
+                          setCards((prevCards) =>
+                            prevCards.map((c, i) =>
+                              i === index ? { ...c, respuestas: e.target.value } : c
+                            )
+                          )
+                        }
+                        bg="white"
+                        flex="1"
+                      />
+                    </Flex>
+                    <Select
+                      placeholder="Seleccione un método corrección"
+                      value={card.metodoCorreccion || ''}
+                      onChange={(e) =>
+                        setCards((prevCards) =>
+                          prevCards.map((c, i) =>
+                            i === index ? { ...c, metodoCorreccion: e.target.value } : c
+                          )
+                        )
+                      }
+                      bg="white"
+                      mt={2}
+                    >
+                      <option value="StringComparison">StringComparison</option>
+                      <option value="EvaluateandCount">EvaluateandCount</option>
+                      <option value="Evaluate">Evaluate</option>
+                    </Select>
+                  </Box>
+
                   </>
                 ) : card.type === 'table' ? (
                   <>
@@ -526,61 +738,179 @@ const insertLatex = (command) => {
                   </>
                 ) : (
                   <>
-                    <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
-                      <Text fontWeight="bold" mb={2}>Alternativas</Text>
-                      {card.alternatives.map((alt, altIndex) => (
-                        <Flex key={altIndex} align="center">
+                  <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
+                    <Text fontWeight="bold" mb={2}>Alternativas</Text>
+                    {card.alternatives.map((alt, altIndex) => (
+                      <Flex key={altIndex} align="start" mb={4}>
+                        {/* Contenedor para los campos de texto */}
+                        <Box flex="1">
+                          {/* Campo de texto para la alternativa */}
                           <Input
-                            key={altIndex}
                             id={`card-alternative-${index}-${altIndex}`}
                             placeholder={`Alternativa ${altIndex + 1}`}
                             bg="white"
-                            mr={2}
                             mb={2}
                           />
+                          {/* Campo para ingresar expresión LaTeX */}
+                          <Flex align="center" gap={2}>
+                            {alt.isEditing ? (
+                              <Input
+                                placeholder="Expresión LaTeX"
+                                value={alt.latex || ''}
+                                onChange={(e) => updateAlternative(index, altIndex, { latex: e.target.value })}
+                                onBlur={() => updateAlternative(index, altIndex, { isEditing: false })}
+                                bg="white"
+                                fontSize="sm"
+                                color="black"
+                                flex="1"
+                              />
+                            ) : (
+                              <Box
+                                bg="white"
+                                borderWidth="1px"
+                                borderRadius="md"
+                                px={3}
+                                py={2}
+                                cursor="pointer"
+                                flex="1"
+                                onClick={() => updateAlternative(index, altIndex, { isEditing: true })}
+                              >
+                                {alt.latex ? (
+                                  <MathJax>{`\\(${alt.latex}\\)`}</MathJax>
+                                ) : (
+                                  <Text color="gray.500" fontSize="sm">Haz clic para agregar expresión</Text>
+                                )}
+                              </Box>
+                            )}
+                            {/* Botón para abrir el modal de ayuda LaTeX */}
+                            <Button
+                              size="xs"
+                              onClick={() => {
+                                setCurrentCardIndex(index);
+                                setActiveAlternativeIndex(altIndex); // Marca la alternativa activa
+                                setActiveHintIndex(null); // Limpia cualquier pista activa
+                                onOpenLatex(); // Abre el modal
+                              }}
+                              aria-label="Abrir ayuda LaTeX para alternativa"
+                            >
+                              ?
+                            </Button>
+                          </Flex>
+                        </Box>
+                        {/* Contenedor para Checkbox y Botón de eliminar */}
+                        <Flex direction="column" align="center" justify="center" ml={4}>
+                          {/* Checkbox para marcar como correcta */}
                           <Checkbox
                             isChecked={alt.correct}
                             onChange={() => handleCorrectChange(index, altIndex)}
-                            mr={2}
+                            mb={2}
                           >
                             Correcta
                           </Checkbox>
+                          {/* Botón para eliminar la alternativa */}
                           {card.alternatives.length > 2 && (
-                            <Button colorScheme="red" onClick={() => removeAlternative(index, altIndex)}>
+                            <Button
+                              colorScheme="red"
+                              size="sm"
+                              onClick={() => removeAlternative(index, altIndex)}
+                            >
                               🗑️
                             </Button>
                           )}
                         </Flex>
-                      ))}
-                      <Button mt={4} onClick={() => addAlternative(index)}>Agregar alternativa</Button>
-                    </Box>
-                    
+                      </Flex>
+                    ))}
+                    {/* Botón para agregar una nueva alternativa */}
+                    <Button mt={4} onClick={() => addAlternative(index)}>Agregar alternativa</Button>
+                  </Box>
+
+
                   </>
                 )}
               </Box>
               {card.type !== 'enunciado' && (
                 <Box flex="1" w="100%">
                 <Box mb={4} p={4} bg="orange.300" borderRadius="md" boxShadow="md">
-                        <Text fontWeight="bold" mb={2}>Pistas</Text>
-                        {card.hints.map((hint, hintIndex) => (
-                          <Flex key={hintIndex} align="center">
+                  <Text fontWeight="bold" mb={2}>Pistas</Text>
+                  {card.hints.map((hint, hintIndex) => (
+                    <Flex key={hintIndex} direction="row" align="center" mb={4}>
+                      {/* Contenedor de los campos */}
+                      <Box flex="1" pr={4}>
+                        {/* Campo de texto para la pista */}
+                        <Input
+                          id={`card-hint-${index}-${hintIndex}`}
+                          placeholder={`Pista ${hintIndex + 1}`}
+                          bg="white"
+                          mb={2}
+                        />
+                        {/* Campo para ingresar expresión LaTeX */}
+                        <Flex align="center" gap={2}>
+                          {hint.isEditing ? (
                             <Input
-                              key={hintIndex}
-                              id={`card-hint-${index}-${hintIndex}`}
-                              placeholder={`Pista ${hintIndex + 1}`}
+                              placeholder="Expresión LaTeX"
+                              value={hint.latex || ''}
+                              onChange={(e) => updateHint(index, hintIndex, { latex: e.target.value })}
+                              onBlur={() => updateHint(index, hintIndex, { isEditing: false })}
                               bg="white"
-                              mr={2}
-                              mb={2}
+                              fontSize="sm"
+                              color="black"
+                              flex="1" // Ajusta el tamaño para que el diseño sea ordenado
                             />
-                            {card.hints.length > 2 && (
-                              <Button colorScheme="red" onClick={() => removeHints(index, hintIndex)}>
-                                🗑️
-                              </Button>
-                            )}
-                          </Flex>
-                        ))}
-                        <Button mt={4} onClick={() => addHints(index)}>Agregar pista</Button>
+                          ) : (
+                            <Box
+                              bg="white"
+                              borderWidth="1px"
+                              borderRadius="md"
+                              px={3}
+                              py={2}
+                              cursor="pointer"
+                              flex="1" // Ajusta el tamaño para que el diseño sea ordenado
+                              onClick={() => updateHint(index, hintIndex, { isEditing: true })}
+                            >
+                              {hint.latex ? (
+                                <MathJax>{`\\(${hint.latex}\\)`}</MathJax>
+                              ) : (
+                                <Text color="gray.500" fontSize="sm">Haz clic para agregar expresión</Text>
+                              )}
+                            </Box>
+                          )}
+                          {/* Botón para abrir el modal de ayuda LaTeX */}
+                          <Button
+                            size="xs"
+                            onClick={() => {
+                              setCurrentCardIndex(index);
+                              setActiveHintIndex(hintIndex); // Estado para identificar la pista activa
+                              onOpenLatex(); // Reutiliza el modal existente
+                            }}
+                            aria-label="Abrir ayuda LaTeX"
+                          >
+                            ?
+                          </Button>
+                        </Flex>
                       </Box>
+                      {/* Botón de eliminar, tamaño fijo */}
+                      <Box>
+                        {card.hints.length > 2 && (
+                          <Button
+                            colorScheme="red"
+                            size="sm"
+                            onClick={() => removeHints(index, hintIndex)}
+                            h="40px" /* Altura fija */
+                            w="40px" /* Ancho fijo */
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center" /* Centralizado */
+                          >
+                            🗑️
+                          </Button>
+                        )}
+                      </Box>
+                    </Flex>
+                  ))}
+                  <Button mt={4} onClick={() => addHints(index)}>Agregar pista</Button>
+                </Box>            
+
+ 
                       {/* Demas imputs */}
                       
                       <Input
@@ -693,43 +1023,96 @@ const insertLatex = (command) => {
               </ModalFooter>
             </ModalContent>
           </Modal>
-      {/* Modal de ayuda con LaTeX (INICIO)*/}
-      <Modal isOpen={isLatexOpen} onClose={onLatexClose} size="xl">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Ayuda con LaTeX</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            {currentCardIndex !== null && (
-              <>
-                {/* Input de LaTeX dentro del modal */}
-                <Input
-                  id={`latex-input-${currentCardIndex}`}
-                  mb={3}
-                />
-                {/* Botones para insertar comandos LaTeX */}
-                <Flex wrap="wrap" gap={2}>
-                  {operations.map(({ label, command }, index) => (
-                    <Button key={index} onClick={() => insertLatex(command)} size="sm">
-                      <MathJax dynamic inline>{`\\(${label}\\)`}</MathJax>
-                    </Button>
-                  ))}
-                </Flex>
-                {/* Vista previa de LaTeX */}
-                <Box mt={4} p={2} borderWidth="1px" borderRadius="md">
-                  <MathJax hideUntilTypeset="first" dynamic>
-                    {`\\(${cards[currentCardIndex]?.latex || 'Expresión'}\\)`}
-                  </MathJax>
-                </Box>
-              </>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={onLatexClose}>Cerrar</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-      {/* Modal de ayuda con LaTeX (FIN) */}
+          {/* Modal de ayuda con LaTeX (INICIO) */}
+          <Modal isOpen={isLatexOpen} onClose={onLatexClose} size="xl">
+            <ModalOverlay />
+            <ModalContent>
+              <ModalHeader>Ayuda con LaTeX</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+                {currentCardIndex !== null && (
+                  <>
+                    <Input
+                      id={`latex-input-${currentCardIndex}-${
+                        activeAlternativeIndex !== null
+                          ? `alternative-${activeAlternativeIndex}`
+                          : activeHintIndex !== null
+                          ? `hint-${activeHintIndex}`
+                          : isBlankActive
+                          ? 'blank'
+                          : isPlaceholderActive
+                          ? 'placeholder'
+                          : 'enunciado'
+                      }`}
+                      value={
+                        activeAlternativeIndex !== null
+                          ? cards[currentCardIndex]?.alternatives[activeAlternativeIndex]?.latex || ''
+                          : activeHintIndex !== null
+                          ? cards[currentCardIndex]?.hints[activeHintIndex]?.latex || ''
+                          : isBlankActive
+                          ? cards[currentCardIndex]?.blank || ''
+                          : isPlaceholderActive
+                          ? cards[currentCardIndex]?.placeholders || ''
+                          : cards[currentCardIndex]?.latex || ''
+                      }
+                      onChange={(e) =>
+                        activeAlternativeIndex !== null
+                          ? updateAlternative(currentCardIndex, activeAlternativeIndex, { latex: e.target.value })
+                          : activeHintIndex !== null
+                          ? updateHint(currentCardIndex, activeHintIndex, { latex: e.target.value })
+                          : isBlankActive
+                          ? updateCard(currentCardIndex, { blank: e.target.value })
+                          : isPlaceholderActive
+                          ? updateCard(currentCardIndex, { placeholders: e.target.value })
+                          : updateCard(currentCardIndex, { latex: e.target.value })
+                      }
+                      mb={3}
+                    />
+                    {/* Botones para insertar comandos LaTeX */}
+                    <Flex wrap="wrap" gap={2}>
+                      {operations.map(({ label, command }, opIndex) => (
+                        <Button key={opIndex} onClick={() => insertLatex(command)} size="sm">
+                          <MathJax dynamic inline>{`\\(${label}\\)`}</MathJax>
+                        </Button>
+                      ))}
+                    </Flex>
+                    {/* Vista previa de LaTeX */}
+                    <Box mt={4} p={2} borderWidth="1px" borderRadius="md">
+                      <MathJax hideUntilTypeset="first" dynamic>
+                        {`\\(${
+                          activeAlternativeIndex !== null
+                            ? cards[currentCardIndex]?.alternatives[activeAlternativeIndex]?.latex || 'Expresión'
+                            : activeHintIndex !== null
+                            ? cards[currentCardIndex]?.hints[activeHintIndex]?.latex || 'Expresión'
+                            : isBlankActive
+                            ? cards[currentCardIndex]?.blank || 'Expresión'
+                            : isPlaceholderActive
+                            ? cards[currentCardIndex]?.placeholders || 'Expresión'
+                            : cards[currentCardIndex]?.latex || 'Expresión'
+                        }\\)`}
+                      </MathJax>
+                    </Box>
+                  </>
+                )}
+              </ModalBody>
+              <ModalFooter>
+                <Button
+                  colorScheme="blue"
+                  onClick={() => {
+                    onLatexClose();
+                    setActiveAlternativeIndex(null); // Limpia la alternativa activa
+                    setActiveHintIndex(null); // Limpia la pista activa
+                    setIsBlankActive(false); // Limpia el estado de Blank
+                    setIsPlaceholderActive(false); // Limpia el estado de Placeholders
+                  }}
+                >
+                  Cerrar
+                </Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
+          {/* Modal de ayuda con LaTeX (FIN) */}
+
         </Flex>
       </div>
     </MathJaxContext>

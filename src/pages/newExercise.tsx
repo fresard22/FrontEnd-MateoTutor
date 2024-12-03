@@ -1,4 +1,4 @@
-import { Select, Box, Button, Input, Flex, Text, Stack, Checkbox, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, useDisclosure, Table,Thead,Tbody,Tr,Th,Td,TableContainer,useToast  } from '@chakra-ui/react';
+import {Tabs, TabList, TabPanels, Tab, TabPanel, Select, Box, Button, Input, Flex, Text, Stack, Checkbox, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, useDisclosure, Table,Thead,Tbody,Tr,Th,Td,TableContainer,useToast  } from '@chakra-ui/react';
 import { useState,useCallback,useEffect } from 'react';
 import React from 'react';
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
@@ -21,7 +21,6 @@ export default function NewExercise() {
     }
   ]);
 
-  
   // Función para cargar tarjetas desde localStorage
   const loadFromCache = () => {
     const cachedData = localStorage.getItem('cardsCache');
@@ -50,92 +49,170 @@ export default function NewExercise() {
     saveToCache(cards); // Guardar en cache siempre que cambien las tarjetas
   }, [cards]);
 
-
   const [currentCardIndex, setCurrentCardIndex] = useState(null); // Índice de la tarjeta seleccionada
   const { isOpen, onOpen, onClose } = useDisclosure(); // Estado del modal
   const { isOpen: isLatexOpen, onOpen: onOpenLatex, onClose: onLatexClose } = useDisclosure();
-  const operations = [ //Operaciones del modal
-    { label: '+', command: '+' }, { label: '-', command: '-' }, { label: '×', command: '\\times' },
-    { label: '÷', command: '\\div' }, { label: '\\frac{□}{□}', command: '\\frac{}{}' }, { label: '=', command: '=' },
-    { label: '≠', command: '\\neq' }, { label: '<', command: '<' }, { label: '>', command: '>' },
-    { label: '≤', command: '\\leq' }, { label: '≥', command: '\\geq' }, { label: '±', command: '\\pm' },
-    { label: '·', command: '\\cdot' }, { label: '\\sqrt{□}', command: '\\sqrt{}' }, { label: '□^n', command: '^{}' },
-    { label: '□ₙ', command: '_{}' }, { label: '\\sum', command: '\\sum_{}^{}' }, { label: '\\int_{□}^{□}', command: '\\int_{}^{}' },
-    { label: '∞', command: '\\infty' }, { label: 'π', command: '\\pi' }, { label: '\\sin', command: '\\sin' },
-    { label: '\\cos', command: '\\cos' }, { label: '\\tan', command: '\\tan' }, { label: '\\log', command: '\\log' },
-    { label: '\\ln', command: '\\ln' }, { label: '\\lim_{x \\to {□}}{□}', command: '\\lim_{x \\to {}}' }, { label: '()', command: '()' },
-    { label: '[]', command: '\\left[ \\right]' }, { label: '{}', command: '\\left\\{ \\right\\}' }
-  ];
+  const operationsByCategory = {
+    'Operadores, Aritmética y Álgebra': [
+      { label: '+', command: '+' },
+      { label: '-', command: '-' },
+      { label: '×', command: '\\times' },
+      { label: '÷', command: '\\div' },
+      { label: '=', command: '=' },
+      { label: '≠', command: '\\neq' },
+      { label: '<', command: '<' },
+      { label: '>', command: '>' },
+      { label: '≤', command: '\\leq' },
+      { label: '≥', command: '\\geq' },
+      { label: '±', command: '\\pm' },
+      { label: '·', command: '\\cdot' },
+      { label: '\\frac{□}{□}', command: '\\frac{}{}' },
+      { label: '\\sqrt{□}', command: '\\sqrt{}' },
+      { label: '\\sqrt[n]{□}', command: '\\sqrt[n]{}' },
+      { label: '□^n', command: '^{}' },
+      { label: '□ₙ', command: '_{}' },
+      { label: '\\sum', command: '\\sum_{}^{}' },
+      { label: '\\prod', command: '\\prod_{}^{}' },
+      { label: '\\int_{□}^{□}', command: '\\int_{}^{}' },
+      { label: '\\nabla', command: '\\nabla' },
+      { label: '\\log', command: '\\log' },
+      { label: '\\ln', command: '\\ln' },
+      { label: '\\infty', command: '\\infty' }
+    ],
+    'Relaciones, Lógica y Conjuntos': [
+      { label: '¬', command: '\\neg' },
+      { label: '∧', command: '\\land' },
+      { label: '∨', command: '\\lor' },
+      { label: '⊕', command: '\\oplus' },
+      { label: '→', command: '\\rightarrow' },
+      { label: '↔', command: '\\leftrightarrow' },
+      { label: '⊤', command: '\\top' },
+      { label: '⊥', command: '\\bot' },
+      { label: '\\overline{x}', command: '\\overline{}' },
+      { label: '∀', command: '\\forall' },
+      { label: '∃', command: '\\exists' },
+      { label: '∄', command: '\\nexists' },
+      { label: '\\in', command: '\\in' },
+      { label: '\\notin', command: '\\notin' },
+      { label: '\\subseteq', command: '\\subseteq' },
+      { label: '\\supseteq', command: '\\supseteq' },
+      { label: '\\subset', command: '\\subset' },
+      { label: '\\supset', command: '\\supset' },
+      { label: '\\cup', command: '\\cup' },
+      { label: '\\cap', command: '\\cap' },
+      { label: '\\setminus', command: '\\setminus' },
+      { label: '\\emptyset', command: '\\emptyset' },
+      { label: '\\mathbb{R}', command: '\\mathbb{R}' },
+      { label: '\\mathbb{Z}', command: '\\mathbb{Z}' },
+      { label: '\\mathbb{N}', command: '\\mathbb{N}' },
+      { label: '\\mathbb{Q}', command: '\\mathbb{Q}' },
+      { label: '\\sim', command: '\\sim' },
+      { label: '\\approx', command: '\\approx' },
+      { label: '\\equiv', command: '\\equiv' }
+    ],
+    'Geometría, Trigonometría y Notación Especial': [
+      { label: '\\angle', command: '\\angle' },
+      { label: '\\triangle', command: '\\triangle' },
+      { label: '\\parallel', command: '\\parallel' },
+      { label: '\\perp', command: '\\perp' },
+      { label: '\\pi', command: '\\pi' },
+      { label: '\\sin', command: '\\sin' },
+      { label: '\\cos', command: '\\cos' },
+      { label: '\\tan', command: '\\tan' },
+      { label: '\\cot', command: '\\cot' },
+      { label: '\\sec', command: '\\sec' },
+      { label: '\\csc', command: '\\csc' },
+      { label: '\\vec{v}', command: '\\vec{}' },
+      { label: '\\hat{v}', command: '\\hat{}' },
+      { label: '\\overrightarrow{AB}', command: '\\overrightarrow{}' },
+      { label: '\\dot{v}', command: '\\dot{}' },
+      { label: '\\ddot{v}', command: '\\ddot{}' },
+      { label: '\\mathcal{A}', command: '\\mathcal{}' },
+      { label: '\\bigcup', command: '\\bigcup' },
+      { label: '\\bigcap', command: '\\bigcap' },
+      { label: '\\vdots', command: '\\vdots' },
+      { label: '\\cdots', command: '\\cdots' },
+      { label: '\\ldots', command: '\\ldots' },
+      { label: '\\ell', command: '\\ell' },
+      { label: '\\phi', command: '\\phi' },
+      { label: '\\gamma', command: '\\gamma' },
+      { label: '\\theta', command: '\\theta' }
+    ],
+     'placeholder': [
+      { label: 'placeholder', command: '\\placeholder[]{}' },
+    ],
+  };
   const updateCard = (index, updatedProps) => {
     setCards(cards.map((card, i) => (i === index ? { ...card, ...updatedProps } : card)));
   };
   const insertLatex = (command) => {
     if (currentCardIndex !== null) {
-      if (isPlaceholderActive) {
-        // Actualiza el campo LaTeX de Placeholders
-        const currentLatex = cards[currentCardIndex]?.placeholders || '';
-        const updatedLatex = `${currentLatex}${command}`;
-        setCards((prevCards) =>
-          prevCards.map((card, index) =>
-            index === currentCardIndex
-              ? { ...card, placeholders: updatedLatex }
-              : card
-          )
-        );
-      } else if (activeHintIndex !== null) {
-        // Actualiza el campo LaTeX de la pista activa
-        const currentLatex = cards[currentCardIndex]?.hints[activeHintIndex]?.latex || '';
-        const updatedLatex = `${currentLatex}${command}`;
-        setCards((prevCards) =>
-          prevCards.map((card, index) =>
-            index === currentCardIndex
-              ? {
-                  ...card,
-                  hints: card.hints.map((hint, hintIndex) =>
-                    hintIndex === activeHintIndex ? { ...hint, latex: updatedLatex } : hint
-                  ),
-                }
-              : card
-          )
-        );
-      } else if (activeAlternativeIndex !== null) {
-        // Actualiza el campo LaTeX de la alternativa activa
-        const currentLatex = cards[currentCardIndex]?.alternatives[activeAlternativeIndex]?.latex || '';
-        const updatedLatex = `${currentLatex}${command}`;
-        setCards((prevCards) =>
-          prevCards.map((card, index) =>
-            index === currentCardIndex
-              ? {
-                  ...card,
-                  alternatives: card.alternatives.map((alt, altIndex) =>
-                    altIndex === activeAlternativeIndex ? { ...alt, latex: updatedLatex } : alt
-                  ),
-                }
-              : card
-          )
-        );
-      } else if (isBlankActive) {
-        // Actualiza el campo LaTeX del "Blank"
-        const currentLatex = cards[currentCardIndex]?.blank || '';
-        const updatedLatex = `${currentLatex}${command}`;
-        setCards((prevCards) =>
-          prevCards.map((card, index) =>
-            index === currentCardIndex ? { ...card, blank: updatedLatex } : card
-          )
-        );
-      } else {
-        // Actualiza el campo LaTeX del enunciado (por defecto)
-        const currentLatex = cards[currentCardIndex]?.latex || '';
-        const updatedLatex = `${currentLatex}${command}`;
-        setCards((prevCards) =>
-          prevCards.map((card, index) =>
-            index === currentCardIndex ? { ...card, latex: updatedLatex } : card
-          )
-        );
+      // Determinar el campo activo
+      const activeField =
+        activeAlternativeIndex !== null
+          ? { type: 'alternative', index: activeAlternativeIndex }
+          : activeHintIndex !== null
+          ? { type: 'hint', index: activeHintIndex }
+          : isBlankActive
+          ? { type: 'blank' }
+          : isPlaceholderActive
+          ? { type: 'placeholder' }
+          : isResponseActive
+          ? { type: 'response' }
+          : { type: 'enunciado' };
+  
+      const inputElement = document.getElementById(
+        `latex-input-${currentCardIndex}-${
+          activeField.type === 'alternative'
+            ? `alternative-${activeField.index}`
+            : activeField.type === 'hint'
+            ? `hint-${activeField.index}`
+            : activeField.type
+        }`
+      );
+  
+      if (inputElement) {
+        const startPos = inputElement.selectionStart;
+        const endPos = inputElement.selectionEnd;
+  
+        const currentValue =
+          activeField.type === 'alternative'
+            ? cards[currentCardIndex]?.alternatives[activeField.index]?.latex || ''
+            : activeField.type === 'hint'
+            ? cards[currentCardIndex]?.hints[activeField.index]?.latex || ''
+            : activeField.type === 'blank'
+            ? cards[currentCardIndex]?.blank || ''
+            : activeField.type === 'placeholder'
+            ? cards[currentCardIndex]?.placeholders || ''
+            : activeField.type === 'response'
+            ? cards[currentCardIndex]?.respuestas || ''
+            : cards[currentCardIndex]?.latex || '';
+  
+        const updatedValue =
+          currentValue.slice(0, startPos) + command + currentValue.slice(endPos);
+  
+        // Actualizar el estado dependiendo del campo activo
+        if (activeField.type === 'alternative') {
+          updateAlternative(currentCardIndex, activeField.index, { latex: updatedValue });
+        } else if (activeField.type === 'hint') {
+          updateHint(currentCardIndex, activeField.index, { latex: updatedValue });
+        } else if (activeField.type === 'blank') {
+          updateCard(currentCardIndex, { blank: updatedValue });
+        } else if (activeField.type === 'placeholder') {
+          updateCard(currentCardIndex, { placeholders: updatedValue });
+        } else if (activeField.type === 'response') {
+          updateCard(currentCardIndex, { respuestas: updatedValue });
+        } else {
+          updateCard(currentCardIndex, { latex: updatedValue });
+        }
+  
+        // Mover el cursor al final del comando insertado
+        setTimeout(() => {
+          inputElement.selectionStart = inputElement.selectionEnd = startPos + command.length;
+        }, 0);
       }
     }
   };
-  
   
   const toast = useToast();
   const [newCardType, setNewCardType] = useState('alternativas');
@@ -277,7 +354,6 @@ export default function NewExercise() {
   const { isOpen: isModal2Open, onOpen: onModal2Open, onClose: onModal2Close } = useDisclosure();
   const [activeModal, setActiveModal] = React.useState(null);
  
-
   useEffect(() => {
     // Imprime el contenido de cards cuando el componente se monta o cuando cards cambia
     console.log("Contenido de cards:", cards);
@@ -292,8 +368,7 @@ export default function NewExercise() {
       const summaryInput = document.querySelector(`#card-summary-${index}`);
       const successMessageInput = document.querySelector(`#card-success-message-${index}`);
       const kcsInput = document.querySelector(`#card-kcs-${index}`);
-
-      
+ 
       return {
         ...card,
         title: titleInput ? titleInput.value : card.title,
@@ -301,9 +376,7 @@ export default function NewExercise() {
         latex: latexInput ? latexInput.value : card.latex,
         summary: summaryInput ? summaryInput.value : card.summary,
         successMessage: successMessageInput ? successMessageInput.value : card.successMessage,
-        kcs: kcsInput ? kcsInput.value : card.kcs,
-        
-        
+        kcs: kcsInput ? kcsInput.value : card.kcs,     
         ...(card.type === 'alternativas' && {
           alternatives: card.alternatives.map((alt, altIndex) => ({
             ...alt,
@@ -324,16 +397,13 @@ export default function NewExercise() {
         }),
         ...(card.type === 'table' && {
           respuestas: card.respuestas
-        }),
-        
-        
+        }),     
         hints: card.hints.map((hint, hintIndex) => ({
           ...hint,
           text: document.querySelector(`#card-hint-${index}-${hintIndex}`)?.value || hint.text
         }))
       };
     });
-
 
     const exerciseNameInput = document.querySelector('#exercise-name-input');
     const exerciseCodeInput = document.querySelector('#exercise-code-input');
@@ -345,16 +415,13 @@ export default function NewExercise() {
       exerciseNameInput ? exerciseNameInput.value : exerciseName,
       exerciseTopicSelect ? exerciseTopicSelect.value : exerciseTopic
     );
-
     descargarJSON(ejercicioJSON, "ejercicio.json");
     localStorage.clear();
   };
 
-
   const saveData = () => {
     alert('Datos a guardar:\n' + 'Tarjetas: ' + JSON.stringify(cards));
   };
-
 
   const [rowValues, setRowValues] = useState(new Array(4).fill('')); 
   const handleButtonClick = useCallback((cardIndex, answerIndex) => {
@@ -374,6 +441,7 @@ export default function NewExercise() {
   ];
 
   {/*Para la funcion del modal con el campo INICIO */}
+  const [isResponseActive, setIsResponseActive] = useState(false); // Indica si el campo Respuestas está activo
   const [isPlaceholderActive, setIsPlaceholderActive] = useState(false); // Controla si el campo Placeholders está activo
   const [isBlankActive, setIsBlankActive] = useState(false); // Indica si el campo Blank está activo
   const [activeHintIndex, setActiveHintIndex] = useState(null); // Para las pistas
@@ -403,7 +471,6 @@ export default function NewExercise() {
     );
   };
   {/*Para la funcion del modal con el campo FIN */}
-
   console.log("render")
   return (
     <MathJaxContext> 
@@ -435,9 +502,7 @@ export default function NewExercise() {
               >
                 {(getCardLabel(card.type) === "Enunciado" ?  getCardLabel(card.type) : getCardLabel(card.type) + " " + index )}
               </Text>
-
               <Box flex="1" w="100%">
-
               {card.type != 'enunciado' ? (
   <>
     <Input
@@ -452,7 +517,6 @@ export default function NewExercise() {
       bg="white"
       mb={2}
     />
-              {/* CUADRO DE TEXTO PARA LATEX (INICIO)*/}
               {/* CUADRO DE TEXTO PARA LATEX (INICIO)*/}
               <Box mb={2}>
                 <Box display="flex" alignItems="center">
@@ -558,7 +622,6 @@ export default function NewExercise() {
                             ?
                           </Button>
                         </Flex>
-
                         {/* Selector para método de corrección */}
                         <Select
                           placeholder="Seleccione un método de corrección"
@@ -635,10 +698,11 @@ export default function NewExercise() {
                           size="xs"
                           onClick={() => {
                             setCurrentCardIndex(index);
-                            setIsBlankActive(false); // Por si otros campos están activos
-                            setActiveAlternativeIndex(null); // Por si otros campos están activos
-                            setActiveHintIndex(null); // Por si otros campos están activos
-                            setIsPlaceholderActive(true); // Activamos el campo placeholders
+                            setIsBlankActive(false);
+                            setActiveAlternativeIndex(null);
+                            setActiveHintIndex(null);
+                            setIsPlaceholderActive(true);
+                            setIsResponseActive(false); // Desactiva el estado de respuestas
                             onOpenLatex();
                           }}
                           aria-label="Abrir ayuda LaTeX para Placeholders"
@@ -646,21 +710,74 @@ export default function NewExercise() {
                           ?
                         </Button>
                       </Flex>
-
-                      {/* Campo para ingresar respuestas separadas por coma */}
-                      <Input
-                        placeholder="Respuestas separadas por coma"
-                        value={card.respuestas || ''}
-                        onChange={(e) =>
-                          setCards((prevCards) =>
-                            prevCards.map((c, i) =>
-                              i === index ? { ...c, respuestas: e.target.value } : c
-                            )
-                          )
-                        }
-                        bg="white"
-                        flex="1"
-                      />
+                      {/* Campo LaTeX para respuestas separadas por coma */}
+                      <Flex align="center" gap={2} flex="1">
+                        {card.isEditingResponses ? (
+                          <Input
+                            placeholder="Respuestas separadas por coma"
+                            value={card.respuestas || ''}
+                            onChange={(e) =>
+                              setCards((prevCards) =>
+                                prevCards.map((c, i) =>
+                                  i === index ? { ...c, respuestas: e.target.value } : c
+                                )
+                              )
+                            }
+                            onBlur={() =>
+                              setCards((prevCards) =>
+                                prevCards.map((c, i) =>
+                                  i === index ? { ...c, isEditingResponses: false } : c
+                                )
+                              )
+                            }
+                            bg="white"
+                            fontSize="sm"
+                            color="black"
+                            flex="1"
+                          />
+                        ) : (
+                          <Box
+                            bg="white"
+                            borderWidth="1px"
+                            borderRadius="md"
+                            px={3}
+                            py={2}
+                            cursor="pointer"
+                            flex="1"
+                            onClick={() =>
+                              setCards((prevCards) =>
+                                prevCards.map((c, i) =>
+                                  i === index ? { ...c, isEditingResponses: true } : c
+                                )
+                              )
+                            }
+                          >
+                            {card.respuestas ? (
+                              <MathJax>{`\\(${card.respuestas}\\)`}</MathJax>
+                            ) : (
+                              <Text color="gray.500" fontSize="sm">
+                                Haz clic para agregar expresión
+                              </Text>
+                            )}
+                          </Box>
+                        )}
+                        {/* Botón para abrir el modal de ayuda LaTeX para respuestas */}
+                        <Button
+                          size="xs"
+                          onClick={() => {
+                            setCurrentCardIndex(index);
+                            setIsBlankActive(false);
+                            setActiveAlternativeIndex(null);
+                            setActiveHintIndex(null);
+                            setIsPlaceholderActive(false);
+                            setIsResponseActive(true); // Activa el estado de respuestas
+                            onOpenLatex();
+                          }}
+                          aria-label="Abrir ayuda LaTeX para Respuestas"
+                        >
+                          ?
+                        </Button>
+                      </Flex>
                     </Flex>
                     <Select
                       placeholder="Seleccione un método corrección"
@@ -680,39 +797,6 @@ export default function NewExercise() {
                       <option value="Evaluate">Evaluate</option>
                     </Select>
                   </Box>
-
-                  </>
-                ) : card.type === 'table' ? (
-                  <>
-                  <Box mb={4} p={4} bg="yellow.300" borderRadius="md" boxShadow="md">
-                      <Text fontWeight="bold" mb={2}>
-                        Tabla de Verdad
-                      </Text>
-                      <TableContainer>
-                        <Table variant='simple'>
-                          <Thead>
-                            <Tr>
-                              <Th>P</Th>
-                              <Th>Q</Th>
-                              <Th>P=>Q</Th>
-                            </Tr>
-                          </Thead>
-                          <Tbody>
-                          {staticValues.map((row, answerIndex) => (
-                            <Tr key={index}>
-                              <Td>{row.P}</Td>
-                              <Td>{row.Q}</Td>
-                              <Td>
-                              <Button onClick={() => handleButtonClick(index, answerIndex)}>
-                                {card.respuestas[answerIndex]}
-                              </Button>
-                              </Td>
-                            </Tr>
-                          ))}
-                          </Tbody>
-                        </Table>
-                      </TableContainer>
-                    </Box>
                   </>
                 ) : card.type === 'verdadero/falso' ? (
                   <>
@@ -823,8 +907,6 @@ export default function NewExercise() {
                     {/* Botón para agregar una nueva alternativa */}
                     <Button mt={4} onClick={() => addAlternative(index)}>Agregar alternativa</Button>
                   </Box>
-
-
                   </>
                 )}
               </Box>
@@ -909,10 +991,7 @@ export default function NewExercise() {
                   ))}
                   <Button mt={4} onClick={() => addHints(index)}>Agregar pista</Button>
                 </Box>            
-
- 
                       {/* Demas imputs */}
-                      
                       <Input
                         id={`card-summary-${index}`}
                         placeholder="Resumen del paso"
@@ -1032,6 +1111,7 @@ export default function NewExercise() {
               <ModalBody>
                 {currentCardIndex !== null && (
                   <>
+                    {/* Input dinámico según el campo activo */}
                     <Input
                       id={`latex-input-${currentCardIndex}-${
                         activeAlternativeIndex !== null
@@ -1042,6 +1122,8 @@ export default function NewExercise() {
                           ? 'blank'
                           : isPlaceholderActive
                           ? 'placeholder'
+                          : isResponseActive
+                          ? 'response'
                           : 'enunciado'
                       }`}
                       value={
@@ -1053,6 +1135,8 @@ export default function NewExercise() {
                           ? cards[currentCardIndex]?.blank || ''
                           : isPlaceholderActive
                           ? cards[currentCardIndex]?.placeholders || ''
+                          : isResponseActive
+                          ? cards[currentCardIndex]?.respuestas || ''
                           : cards[currentCardIndex]?.latex || ''
                       }
                       onChange={(e) =>
@@ -1064,18 +1148,43 @@ export default function NewExercise() {
                           ? updateCard(currentCardIndex, { blank: e.target.value })
                           : isPlaceholderActive
                           ? updateCard(currentCardIndex, { placeholders: e.target.value })
+                          : isResponseActive
+                          ? updateCard(currentCardIndex, { respuestas: e.target.value })
                           : updateCard(currentCardIndex, { latex: e.target.value })
                       }
                       mb={3}
                     />
-                    {/* Botones para insertar comandos LaTeX */}
-                    <Flex wrap="wrap" gap={2}>
-                      {operations.map(({ label, command }, opIndex) => (
-                        <Button key={opIndex} onClick={() => insertLatex(command)} size="sm">
-                          <MathJax dynamic inline>{`\\(${label}\\)`}</MathJax>
-                        </Button>
-                      ))}
-                    </Flex>
+
+                    {/* Tabs para Categorías */}
+                    <Tabs variant="line" colorScheme="gray">
+                      <TabList>
+                        {Object.keys(operationsByCategory).map((category, index) => (
+                          <Tab key={index} _selected={{ borderColor: 'blue.500', color: 'blue.500' }} _hover={{ color: 'blue.400' }}>
+                            {category}
+                          </Tab>
+                        ))}
+                      </TabList>
+                      <TabPanels>
+                        {Object.values(operationsByCategory).map((operations, index) => (
+                          <TabPanel key={index}>
+                            <Flex wrap="wrap" gap={2}>
+                              {operations.map(({ label, command }, opIndex) => (
+                                <Button
+                                  key={opIndex}
+                                  size="sm"
+                                  variant="outline"
+                                  _hover={{ bg: 'blue.50', borderColor: 'blue.300' }}
+                                  onClick={() => insertLatex(command)}
+                                >
+                                  <MathJax dynamic inline>{`\\(${label}\\)`}</MathJax>
+                                </Button>
+                              ))}
+                            </Flex>
+                          </TabPanel>
+                        ))}
+                      </TabPanels>
+                    </Tabs>
+
                     {/* Vista previa de LaTeX */}
                     <Box mt={4} p={2} borderWidth="1px" borderRadius="md">
                       <MathJax hideUntilTypeset="first" dynamic>
@@ -1088,6 +1197,8 @@ export default function NewExercise() {
                             ? cards[currentCardIndex]?.blank || 'Expresión'
                             : isPlaceholderActive
                             ? cards[currentCardIndex]?.placeholders || 'Expresión'
+                            : isResponseActive
+                            ? cards[currentCardIndex]?.respuestas || 'Expresión'
                             : cards[currentCardIndex]?.latex || 'Expresión'
                         }\\)`}
                       </MathJax>
@@ -1100,10 +1211,11 @@ export default function NewExercise() {
                   colorScheme="blue"
                   onClick={() => {
                     onLatexClose();
-                    setActiveAlternativeIndex(null); // Limpia la alternativa activa
-                    setActiveHintIndex(null); // Limpia la pista activa
-                    setIsBlankActive(false); // Limpia el estado de Blank
-                    setIsPlaceholderActive(false); // Limpia el estado de Placeholders
+                    setActiveAlternativeIndex(null);
+                    setActiveHintIndex(null);
+                    setIsBlankActive(false);
+                    setIsPlaceholderActive(false);
+                    setIsResponseActive(false);
                   }}
                 >
                   Cerrar
@@ -1111,6 +1223,7 @@ export default function NewExercise() {
               </ModalFooter>
             </ModalContent>
           </Modal>
+
           {/* Modal de ayuda con LaTeX (FIN) */}
 
         </Flex>

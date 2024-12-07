@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { Box, Button, Input, Text } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { Box, Text, Button } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 import type { ExType } from "../components/lvltutor/Tools/ExcerciseType";
 import type { ExLog } from "../components/LogicTutor/Tools/ExcerciseType2";
+import { useAuth } from "../components/Auth";
 
 // Cargar dinámicamente los tutores
 const DynamicPlain = dynamic(() => import("../components/lvltutor/Plain"));
@@ -13,32 +14,41 @@ const PreviewPage = () => {
   const [previewContent, setPreviewContent] = useState<ExType | ExLog | null>(null);
   const [error, setError] = useState<string>("");
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const { isLoading, project } = useAuth();
 
-    try {
-      const fileContent = await file.text();
-      const parsedContent = JSON.parse(fileContent);
-
-      // Validaciones específicas para el archivo
-      if (!parsedContent.type) {
-        throw new Error("El archivo no contiene el campo 'type' necesario para identificar el tipo de ejercicio.");
+  useEffect(() => {
+    // Recuperar el JSON de localStorage
+    if (isLoading || !project) return;
+    const jsonData = localStorage.getItem("ejercicioJSON");
+    console.log("jsonData: ", jsonData);
+    if (jsonData) {
+      try {
+        const parsedContent = JSON.parse(jsonData);
+        if (!parsedContent.type) {
+          throw new Error("El archivo no contiene el campo 'type' necesario para identificar el tipo de ejercicio.");
+        }
+        setPreviewContent(parsedContent as ExType | ExLog);
+        setError("");
+      } catch (e) {
+        setError(`Error al procesar el archivo: ${(e as Error).message}`);
+      } finally {
+        // Opcional: limpiar localStorage después de usar
+        localStorage.removeItem("ejercicioJSON");
       }
-
-      // Validaciones solo para tipos específicos, eliminando restricción de `exc` para `lvltutor2`
-      if (parsedContent.type === "lvltutor" && !parsedContent.steps) {
-        throw new Error("El archivo de tipo 'lvltutor' debe contener el campo 'steps'.");
-      } else if (parsedContent.type === "wordProblem" && !parsedContent.exercise) {
-        throw new Error("El archivo de tipo 'wordProblem' debe contener el campo 'exercise'.");
-      }
-
-      setPreviewContent(parsedContent as ExType | ExLog);
-      setError("");
-    } catch (e) {
-      setError(`Error al procesar el archivo: ${(e as Error).message}`);
-      setPreviewContent(null);
+    } else {
+      setError("No se encontró ningún archivo JSON en localStorage.");
     }
+  }, [isLoading, project]);
+
+  const handleGoBack = () => {
+    // Navegar a la página anterior
+    window.history.back();
+  };
+
+  const handleConfirm = () => {
+    // Confirmar la acción
+    alert("¡Ejercicio confirmado!");
+    // Aquí puedes realizar una acción adicional, como guardar datos o redirigir.
   };
 
   const renderPreview = () => {
@@ -46,7 +56,6 @@ const PreviewPage = () => {
       return <Text>No hay contenido para previsualizar.</Text>;
     }
 
-    // Renderizar el componente adecuado basado en el tipo del contenido
     switch (previewContent.type) {
       case "lvltutor":
         return <DynamicPlain steps={previewContent as ExType} />;
@@ -60,24 +69,29 @@ const PreviewPage = () => {
   };
 
   return (
-    <Box padding="4" maxWidth="600px" margin="auto">
-      <Text fontSize="2xl" marginBottom="4">Sube un archivo .json para previsualizar el ejercicio</Text>
-      
-      <Input
-        type="file"
-        accept=".json"
-        onChange={handleFileUpload}
-        marginBottom="4"
-      />
-      
+    <Box padding="4" maxWidth="600px" margin="auto" position="relative" minHeight="100vh">
+      <Text fontSize="2xl" marginBottom="4">Previsualización del ejercicio</Text>
       {error && (
         <Text color="red.500" marginBottom="4">
           {error}
         </Text>
       )}
-
       <Box marginTop="4">
         {renderPreview()}
+      </Box>
+      <Box 
+        position="fixed" 
+        bottom="0" 
+        left="0" 
+        width="100%" 
+        padding="4" 
+        bg="white" 
+        borderTop="1px solid #e2e8f0" 
+        display="flex" 
+        justifyContent="space-between"
+      >
+        <Button colorScheme="gray" onClick={handleGoBack}>Volver</Button>
+        <Button colorScheme="teal" onClick={handleConfirm}>Confirmar</Button>
       </Box>
     </Box>
   );

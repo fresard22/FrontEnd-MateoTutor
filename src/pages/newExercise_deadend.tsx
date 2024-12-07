@@ -33,56 +33,35 @@ import { useState, useCallback, useEffect } from "react";
 import React from "react";
 import { MathJaxContext, MathJax } from "better-react-mathjax";
 import { generarEjercicioJSON, descargarJSON } from "./jsonTransform";
-import { kcList } from './listaKcs';
 
-export default function NewExercise() { 
-  const [cards, setCards] = useState([ //define estructura primera tarjeta tipo enunciado
+export default function NewExercise() {
+  const [cards, setCards] = useState([
     {
       type: "enunciado",
       title: "",
       expression: "",
-    }
+    },
   ]);
 
+  const [temporaryLatex, setTemporaryLatex] = useState("");
 
-  //funciones para apartado kcs
-  const [kcOptions, setKcOptions] = useState([]);
-
-  useEffect(() => {
-    setKcOptions(kcList);
-  }, []);
-  
-  const [kcInput, setKcInput] = useState(''); 
-
-  const handleKcChange = (index, value) => {
-    setCards((prevCards) => {
-      const updatedCards = [...prevCards];
-      updatedCards[index] = {
-        ...updatedCards[index],
-        kcs: updatedCards[index].kcs ? updatedCards[index].kcs +","+ value : value
-      };
-      return updatedCards;
-    });
-  };
-
-/*
+  /*
   // Función para cargar tarjetas desde localStorage
   const loadFromCache = () => {
-    const cachedData = localStorage.getItem("cardsCache");
+    const cachedData = localStorage.getItem('cardsCache');
     if (cachedData) {
       try {
         const data = JSON.parse(cachedData);
         setCards(data.cards); // Restaurar tarjetas desde el cache
       } catch (error) {
-        console.error("Error al parsear el JSON del cache:", error);
+        console.error('Error al parsear el JSON del cache:', error);
       }
     }
-  };
+  };  
 
-  
   //guarde en cache
   const saveToCache = (newCards) => {
-    localStorage.setItem("cardsCache", JSON.stringify({ cards: newCards }));
+    localStorage.setItem('cardsCache', JSON.stringify({ cards: newCards }));
   };
 
   // useEffect para cargar tarjetas desde el cache cuando el componente se monta
@@ -93,8 +72,7 @@ export default function NewExercise() {
   // useEffect para guardar en cache cada vez que se actualizan las tarjetas
   useEffect(() => {
     saveToCache(cards); // Guardar en cache siempre que cambien las tarjetas
-  }, [cards]);
-  */
+  }, [cards]); */
 
   const [currentCardIndex, setCurrentCardIndex] = useState(null); // Índice de la tarjeta seleccionada
   const { isOpen, onOpen, onClose } = useDisclosure(); // Estado del modal
@@ -198,6 +176,7 @@ export default function NewExercise() {
       )
     );
   };
+
   const insertLatex = (command) => {
     if (currentCardIndex !== null) {
       // Determinar el campo activo
@@ -362,27 +341,7 @@ export default function NewExercise() {
     }
     onClose();
   };
-  /*const handleCardContentChange = (index, field, newContent) => {
-    const updatedCards = [...cards];
-    updatedCards[index][field] = newContent;
-    setCards(updatedCards);
-  };
-  const handleHintChange = (cardIndex, hintIndex, newContent) => {
-    const updatedCards = [...cards];
-    updatedCards[cardIndex].hints = updatedCards[cardIndex].hints.map((hint, index) => ({
-      ...hint,
-      text: index === hintIndex ? newContent : hint.text,
-    }));
-    setCards(updatedCards);
-  };
-  const handleAlternativeChange = (cardIndex, altIndex, newContent) => {
-    const updatedCards = [...cards];
-    updatedCards[cardIndex].alternatives = updatedCards[cardIndex].alternatives.map((alt, index) => ({
-      ...alt,
-      text: index === altIndex ? newContent : alt.text,
-    }));
-    setCards(updatedCards);
-  };*/
+
   const handleCorrectChange = (cardIndex, altIndex) => {
     const updatedCards = [...cards];
     updatedCards[cardIndex].alternatives = updatedCards[
@@ -421,10 +380,11 @@ export default function NewExercise() {
       setCards(updatedCards);
     }
   };
-  const handleOpenLatexModal = (index) => {
+  /* const handleOpenLatexModal = (index) => {
     setCurrentCardIndex(index); // Establecemos el índice de la tarjeta actual
     onLatexOpen(); // Abre el modal de LaTeX, asegúrate de tener un useDisclosure para este modal
-  };
+  }; */
+
   const removeHints = (cardIndex, hintIndex) => {
     const updatedCards = [...cards];
     if (updatedCards[cardIndex].hints.length > 2) {
@@ -468,50 +428,12 @@ export default function NewExercise() {
         return "Desconocido";
     }
   };
-
-  
   const deleteCard = (index) => {
-  
-    const handleDelete = () => {
-      // Lógica para eliminar la tarjeta
+    const isConfirmed = window.confirm("¿Realmente deseas eliminar este paso?");
+    if (isConfirmed) {
       const updatedCards = cards.filter((_, i) => i !== index);
       setCards(updatedCards);
-      toast.closeAll(); // Cerrar el toast después de eliminar
-    };
-  
-    toast({
-      position: "top",
-      duration: null, // Mantener el toast abierto hasta que el usuario decida
-      render: ({ onClose }) => (
-        <Box
-          bg="white"
-          p={4}
-          borderRadius="md"
-          boxShadow="lg"
-          border="1px solid #ddd"
-        >
-          <Text fontWeight="bold" mb={2}>
-            ¿Realmente deseas eliminar este paso?
-          </Text>
-          <Flex justifyContent="flex-end" gap={2}>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={onClose} // Cerrar el toast si el usuario cancela
-            >
-              Cancelar
-            </Button>
-            <Button
-              size="sm"
-              colorScheme="red"
-              onClick={handleDelete} // Ejecutar la acción de eliminar
-            >
-              Eliminar
-            </Button>
-          </Flex>
-        </Box>
-      ),
-    });
+    }
   };
 
   const [selectedTopic, setSelectedTopic] = useState("");
@@ -533,10 +455,6 @@ export default function NewExercise() {
     // Imprime el contenido de cards cuando el componente se monta o cuando cards cambia
     console.log("Contenido de cards:", cards);
   }, [cards]);
-
-  let exerciseCodeInput = "";
-  let exerciseTitleInput = "";
-  let exerciseTopicSelect = "";
 
   const handleSave = () => {
     const updatedCards = cards.map((card, index) => {
@@ -586,7 +504,7 @@ export default function NewExercise() {
           respuestas:
             document.querySelector(`#card-respuestas-${index}`)?.value ||
             card.respuestas,
-        }),/*
+        })/*,
         ...(card.type === "table" && {
           respuestas: card.respuestas,
         }),
@@ -599,13 +517,17 @@ export default function NewExercise() {
       };
     });
 
-
+    const exerciseNameInput = document.querySelector("#exercise-name-input");
+    const exerciseCodeInput = document.querySelector("#exercise-code-input");
+    const exerciseTopicSelect = document.querySelector(
+      "#exercise-topic-select"
+    );
 
     const ejercicioJSON = generarEjercicioJSON(
       updatedCards,
-      exerciseCodeInput,
-      exerciseTitleInput,
-      exerciseTopicSelect
+      exerciseCodeInput ? exerciseCodeInput.value : exerciseCode,
+      exerciseNameInput ? exerciseNameInput.value : exerciseName,
+      exerciseTopicSelect ? exerciseTopicSelect.value : exerciseTopic
     );
     descargarJSON(ejercicioJSON, "ejercicio.json");
     localStorage.clear();
@@ -615,9 +537,9 @@ export default function NewExercise() {
     window.location.href = "/previsualizar";
   };
 
-  const saveData = () => {
-    alert("Datos a guardar:\n" + "Tarjetas: " + JSON.stringify(cards));
-  };
+  /*const saveData = () => {
+    alert('Datos a guardar:\n' + 'Tarjetas: ' + JSON.stringify(cards));
+  }; */
 
   const [rowValues, setRowValues] = useState(new Array(4).fill(""));
   const handleButtonClick = useCallback((cardIndex, answerIndex) => {
@@ -723,55 +645,34 @@ export default function NewExercise() {
                         updateCard(index, { question: e.target.value })
                       }
                     />
-                    {/* CUADRO DE TEXTO PARA LATEX (INICIO)*/}
+                    {/* CUADRO DE TEXTO PARA LATEX (INICIO) */}
                     <Box mb={2}>
                       <Box display="flex" alignItems="center">
-                        {card.isEditing ? (
-                          <Input
-                            placeholder="Haz clic para agregar exp"
-                            value={card.latex || ""}
-                            onChange={(e) =>
-                              updateCard(index, { latex: e.target.value })
-                            }
-                            onBlur={() =>
-                              updateCard(index, { isEditing: false })
-                            }
-                            bg="white"
-                            flex="1"
-                            mb={0}
-                            fontSize="md" // Tamaño igual al placeholder
-                            fontFamily="body" // Fuente consistente
-                            color="black"
-                            _placeholder={{ color: "#ccd3dd", fontSize: "md" }} // Placeholder con color gris claro
-                          />
-                        ) : (
-                          <Box
-                            bg="white"
-                            borderWidth="1px"
-                            borderRadius="md"
-                            cursor="pointer"
-                            flex="1"
-                            px={4} // Padding horizontal similar al Input
-                            py={2} // Padding vertical similar al Input
-                            fontSize="md" // Igual tamaño de fuente que el Input
-                            fontFamily="body" // Misma fuente
-                            color={card.latex ? "black" : "#ccd3dd"} // Color dinámico: gris claro o negro
-                            onClick={() =>
-                              updateCard(index, { isEditing: true })
-                            }
-                          >
-                            {card.latex ? (
-                              <MathJax>{`\\(${card.latex}\\)`}</MathJax> // Renderiza LaTeX si existe contenido
-                            ) : (
-                              " Haz click para agregar una expresión o utiliza el editor -->" // Texto fijo "Expresión"
-                            )}
-                          </Box>
-                        )}
+                        <Box
+                          bg="white"
+                          borderWidth="1px"
+                          borderRadius="md"
+                          flex="1"
+                          px={4} // Padding horizontal similar al Input
+                          py={2} // Padding vertical similar al Input
+                          fontSize="md" // Igual tamaño de fuente que el Input
+                          fontFamily="body" // Misma fuente
+                          color={card.latex ? "black" : "#ccd3dd"} // Color dinámico: gris claro o negro
+                        >
+                          {card.latex ? (
+                            <MathJax>{`\\(${card.expression}\\)`}</MathJax> // Renderiza LaTeX si existe contenido
+                          ) : (
+                            "Expresión" // Texto fijo "Expresión"
+                          )}
+                        </Box>
+                        {/* Botón para abrir el modal de edición de LaTeX */}
                         <Button
                           size="xs"
                           ml={2}
                           onClick={() => (
-                            setCurrentCardIndex(index), onOpenLatex()
+                            setCurrentCardIndex(index),
+                            setTemporaryLatex(cards[index]?.latex || ""),
+                            onOpenLatex()
                           )}
                         >
                           ✏
@@ -795,7 +696,7 @@ export default function NewExercise() {
                       }
                     />
                     <Input
-                      placeholder={`Expresión del enunciado en latex`}
+                      placeholder={`Expresión del enunciado`}
                       bg="white" //agregar modal de latex + guardar campo
                       mb={2}
                       onBlur={(e) =>
@@ -818,50 +719,30 @@ export default function NewExercise() {
                       <Flex key={index} align="center" gap={2}>
                         {/* Campo LaTeX para expresión del ejercicio */}
                         <Flex align="center" gap={2} flex="1">
-                          {card.isEditingBlank ? (
-                            <Input
-                              id={`blank-latex-${index}`}
-                              placeholder="Expresión LaTeX"
-                              value={card.blank || ""}
-                              onChange={(e) =>
-                                updateCard(index, { blank: e.target.value })
-                              }
-                              onBlur={() =>
-                                updateCard(index, { isEditingBlank: false })
-                              }
-                              bg="white"
-                              fontSize="sm"
-                              color="black"
-                              flex="1"
-                            />
-                          ) : (
                             <Box
                               bg="white"
                               borderWidth="1px"
                               borderRadius="md"
                               px={3}
                               py={2}
-                              cursor="pointer"
                               flex="1"
-                              onClick={() =>
-                                updateCard(index, { isEditingBlank: true })
-                              }
                             >
                               {card.blank ? (
                                 <MathJax>{`\\(${card.blank}\\)`}</MathJax>
                               ) : (
                                 <Text color="gray.500" fontSize="sm">
-                                  Haz clic para agregar expresión
+                                  Agrega latex con el editor -->
                                 </Text>
                               )}
                             </Box>
-                          )}
+                          
                           {/* Botón para abrir el modal de ayuda LaTeX */}
                           <Button
                             size="xs"
                             onClick={() => {
                               setCurrentCardIndex(index); // Índice actual de la tarjeta
                               setIsBlankActive(true); // Indica que estamos trabajando con Blank
+                              setTemporaryLatex(cards[index]?.blanklatex || "")
                               onOpenLatex(); // Abre el modal
                             }}
                             aria-label="Abrir ayuda LaTeX para Blank"
@@ -871,29 +752,18 @@ export default function NewExercise() {
                         </Flex>
                         {/* Selector para método de corrección */}
                         <Select
-                        placeholder="Seleccione un método corrección"
-                        value={card.metodoCorreccion || ""}
-                        onChange={(e) =>
-                          setCards((prevCards) =>
-                            prevCards.map((c, i) =>
-                              i === index
-                                ? { ...c, metodoCorreccion: e.target.value }
-                                : c
-                            )
-                          )
-                        }
-                        bg="white"
-                        mt={2}
-                        flex="1"
-                      >
-                        <option value="StringComparison">
-                          StringComparison
-                        </option>
-                        <option value="EvaluateandCount">
-                          EvaluateandCount
-                        </option>
-                        <option value="Evaluate">Evaluate</option>
-                      </Select>
+                          placeholder="Seleccione un método de corrección"
+                          bg="white"
+                          flex="1"
+                        >
+                          <option value="StringComparison">
+                            StringComparison
+                          </option>
+                          <option value="EvaluateandCount">
+                            EvaluateandCount
+                          </option>
+                          <option value="Evaluate">Evaluate</option>
+                        </Select>
                       </Flex>
                     </Box>
                   </>
@@ -1139,9 +1009,6 @@ export default function NewExercise() {
                               placeholder={`Alternativa ${altIndex + 1}`}
                               bg="white"
                               mb={2}
-                              onBlur={(e) =>
-                                updateAlternative(index, altIndex , { text: e.target.value })
-                              }
                             />
                             {/* Campo para ingresar expresión LaTeX */}
                             <Flex align="center" gap={2}>
@@ -1270,11 +1137,6 @@ export default function NewExercise() {
                             placeholder={`Pista ${hintIndex + 1}`}
                             bg="white"
                             mb={2}
-                            onBlur={(e) =>
-                              updateHint(index, hintIndex, {
-                                text: e.target.value
-                              })
-                            }
                           />
                           {/* Campo para ingresar expresión LaTeX */}
                           <Flex align="center" gap={2}>
@@ -1316,7 +1178,7 @@ export default function NewExercise() {
                                   <MathJax>{`\\(${hint.latex}\\)`}</MathJax>
                                 ) : (
                                   <Text color="gray.500" fontSize="sm">
-                                    Haz clic para agregar expresión
+                                    Haz clic en el lapiz para agregar expresión
                                   </Text>
                                 )}
                               </Box>
@@ -1364,49 +1226,26 @@ export default function NewExercise() {
                     placeholder="Resumen del paso"
                     bg="white"
                     mb={4}
-                    onBlur={(e) =>
-                      updateCard(index, { summary: e.target.value })
-                    }
                   />
                   <Input
                     id={`card-succes-message-${index}`}
                     placeholder="Mensaje de éxito"
                     bg="white"
                     mb={4}
-                    onBlur={(e) =>
-                      updateCard(index, { successMessage: e.target.value })
-                    }
                   />
                   <Input
                     id={`card-incorrect-message-${index}`}
                     placeholder="Mensaje de fallo"
                     bg="white"
                     mb={4}
-                    onBlur={(e) =>
-                      updateCard(index, { incorrectMessage: e.target.value })
-                    }
                   />
-                  <Flex align="center" mb={4}>
-                        <Box>
-                          <Select
-                            placeholder='Seleccione un KC'
-                            value={kcOptions.values}
-                            onChange={(e) => handleKcChange(index, e.target.value)}
-                            bg="white"
-                            mb={4}
-                          >
-                            {kcOptions.map((kc, kcIndex) => (
-                              <option key={kcIndex} value={kc.value}>
-                                {kc.label}
-                              </option>
-                            ))}
-                          </Select> 
-                        </Box>
-                      <Text ml={4}>{card.kcs || kcInput}</Text>
-                      </Flex>
-
-              </Box>
-
+                  <Input
+                    id={`card-kcs-${index}`}
+                    placeholder="Kc's del ejercicio"
+                    bg="white"
+                    mb={4}
+                  />
+                </Box>
               )}
               {/* Botón de Eliminar */}
               {card.type !== "enunciado" && (
@@ -1469,7 +1308,7 @@ export default function NewExercise() {
                   <option value="multipleplaceholder">
                     Paso de placeholders
                   </option>
-                  {/*<option value="table">Paso de tabla de verdad</option>*/}
+                  <option value="table">Paso de tabla de verdad</option>
                 </Select>
               </ModalBody>
               <ModalFooter>
@@ -1490,16 +1329,12 @@ export default function NewExercise() {
               <ModalBody>
                 <Stack spacing={3}>
                   <Flex align="center">
-                    <Text width="200px">Titulo del Ejercicio:</Text>
-                    <Input placeholder="Titulo del Ejercicio" onBlur={(e) => {
-        exerciseTitleInput = e.target.value;
-      }}/>
+                    <Text width="200px">Nombre Del Ejercicio:</Text>
+                    <Input placeholder="Nombre Del Ejercicio" />
                   </Flex>
                   <Flex align="center">
                     <Text width="200px">Código Del Ejercicio:</Text>
-                    <Input placeholder="Código Del Ejercicio" onBlur={(e) => {
-        exerciseCodeInput = e.target.value;
-      }} />
+                    <Input placeholder="Código Del Ejercicio" />
                   </Flex>
                   <Flex align="center">
                     <Text width="200px">Tópico del Ejercicio:</Text>
@@ -1520,7 +1355,7 @@ export default function NewExercise() {
               </ModalBody>
               <ModalFooter>
                 <Button colorScheme="blue" mr={3} onClick={handleSave}>
-                  Descargar y pasar a vista previa
+                  Guardar
                 </Button>
                 <Button variant="ghost" onClick={onClose}>
                   Cancelar
@@ -1529,14 +1364,49 @@ export default function NewExercise() {
             </ModalContent>
           </Modal>
           {/* Modal de ayuda con LaTeX (INICIO) */}
-          <Modal isOpen={isLatexOpen} onClose={onLatexClose} size="xl">
+          <Modal
+            isOpen={isLatexOpen}
+            onClose={() => {
+              // Al cerrar, aplicar cambios de temporaryLatex a cards
+              if (currentCardIndex !== null) {
+                if (activeAlternativeIndex !== null) {
+                  updateAlternative(currentCardIndex, activeAlternativeIndex, {
+                    latex: temporaryLatex,
+                  });
+                } else if (activeHintIndex !== null) {
+                  updateHint(currentCardIndex, activeHintIndex, {
+                    latex: temporaryLatex,
+                  });
+                } else if (isBlankActive) {
+                  updateCard(currentCardIndex, { blank: temporaryLatex });
+                } else if (isPlaceholderActive) {
+                  updateCard(currentCardIndex, {
+                    placeholders: temporaryLatex,
+                  });
+                } else if (isResponseActive) {
+                  updateCard(currentCardIndex, { respuestas: temporaryLatex });
+                } else {
+                  updateCard(currentCardIndex, { latex: temporaryLatex });
+                }
+              }
+              // Restablecer estado del modal
+              onLatexClose();
+              setActiveAlternativeIndex(null);
+              setActiveHintIndex(null);
+              setIsBlankActive(false);
+              setIsPlaceholderActive(false);
+              setIsResponseActive(false);
+              setTemporaryLatex(""); // Limpiar variable temporal
+            }}
+            size="xl"
+          >
             <ModalOverlay />
             <ModalContent>
               <ModalHeader>Ayuda con LaTeX</ModalHeader>
               <ModalBody>
                 {currentCardIndex !== null && (
                   <>
-                    {/* Input dinámico según el campo activo */}
+                    {/* Variable temporal para almacenar el valor de LaTeX */}
                     <Input
                       id={`latex-input-${currentCardIndex}-${
                         activeAlternativeIndex !== null
@@ -1551,49 +1421,8 @@ export default function NewExercise() {
                           ? "response"
                           : "enunciado"
                       }`}
-                      value={
-                        activeAlternativeIndex !== null
-                          ? cards[currentCardIndex]?.alternatives[
-                              activeAlternativeIndex
-                            ]?.latex || ""
-                          : activeHintIndex !== null
-                          ? cards[currentCardIndex]?.hints[activeHintIndex]
-                              ?.latex || ""
-                          : isBlankActive
-                          ? cards[currentCardIndex]?.blank || ""
-                          : isPlaceholderActive
-                          ? cards[currentCardIndex]?.placeholders || ""
-                          : isResponseActive
-                          ? cards[currentCardIndex]?.respuestas || ""
-                          : cards[currentCardIndex]?.latex || ""
-                      }
-                      onChange={(e) =>
-                        activeAlternativeIndex !== null
-                          ? updateAlternative(
-                              currentCardIndex,
-                              activeAlternativeIndex,
-                              { latex: e.target.value }
-                            )
-                          : activeHintIndex !== null
-                          ? updateHint(currentCardIndex, activeHintIndex, {
-                              latex: e.target.value,
-                            })
-                          : isBlankActive
-                          ? updateCard(currentCardIndex, {
-                              blank: e.target.value,
-                            })
-                          : isPlaceholderActive
-                          ? updateCard(currentCardIndex, {
-                              placeholders: e.target.value,
-                            })
-                          : isResponseActive
-                          ? updateCard(currentCardIndex, {
-                              respuestas: e.target.value,
-                            })
-                          : updateCard(currentCardIndex, {
-                              latex: e.target.value,
-                            })
-                      }
+                      value={temporaryLatex}
+                      onChange={(e) => setTemporaryLatex(e.target.value)} // Actualiza solo la variable temporal
                       mb={3}
                     />
 
@@ -1630,7 +1459,11 @@ export default function NewExercise() {
                                         bg: "blue.50",
                                         borderColor: "blue.300",
                                       }}
-                                      onClick={() => insertLatex(command)}
+                                      onClick={() =>
+                                        setTemporaryLatex(
+                                          (prev) => `${prev}${command}`
+                                        )
+                                      } // Inserta el comando en la variable temporal
                                     >
                                       <MathJax
                                         dynamic
@@ -1649,23 +1482,7 @@ export default function NewExercise() {
                     {/* Vista previa de LaTeX */}
                     <Box mt={4} p={2} borderWidth="1px" borderRadius="md">
                       <MathJax hideUntilTypeset="first" dynamic>
-                        {`\\(${
-                          activeAlternativeIndex !== null
-                            ? cards[currentCardIndex]?.alternatives[
-                                activeAlternativeIndex
-                              ]?.latex || "Expresión"
-                            : activeHintIndex !== null
-                            ? cards[currentCardIndex]?.hints[activeHintIndex]
-                                ?.latex || "Expresión"
-                            : isBlankActive
-                            ? cards[currentCardIndex]?.blank || "Expresión"
-                            : isPlaceholderActive
-                            ? cards[currentCardIndex]?.placeholders ||
-                              "Expresión"
-                            : isResponseActive
-                            ? cards[currentCardIndex]?.respuestas || "Expresión"
-                            : cards[currentCardIndex]?.latex || "Expresión"
-                        }\\)`}
+                        {`\\(${temporaryLatex || "Expresión"}\\)`}
                       </MathJax>
                     </Box>
                   </>
@@ -1675,15 +1492,42 @@ export default function NewExercise() {
                 <Button
                   colorScheme="blue"
                   onClick={() => {
-                    onLatexClose();
+                    // Al cerrar el modal, aplicar cambios
+                    if (currentCardIndex !== null) {
+                      if (activeAlternativeIndex !== null) {
+                        updateAlternative(
+                          currentCardIndex,
+                          activeAlternativeIndex,
+                          { alternativalatex: temporaryLatex }
+                        );
+                      } else if (activeHintIndex !== null) {
+                        updateHint(currentCardIndex, activeHintIndex, {
+                          hintlatex: temporaryLatex,
+                        });
+                      } else if (isBlankActive) {
+                        updateCard(currentCardIndex, { blanklatex: temporaryLatex });
+                      } else if (isPlaceholderActive) {
+                        updateCard(currentCardIndex, {
+                          placeholderslatex: temporaryLatex,
+                        });
+                      } else if (isResponseActive) {
+                        updateCard(currentCardIndex, {
+                          respuestaslatex: temporaryLatex,
+                        });
+                      } else {
+                        updateCard(currentCardIndex, { expression: temporaryLatex });
+                      }
+                    }
+                    onLatexClose(); // Cerrar el modal
                     setActiveAlternativeIndex(null);
                     setActiveHintIndex(null);
                     setIsBlankActive(false);
                     setIsPlaceholderActive(false);
                     setIsResponseActive(false);
+                    setTemporaryLatex(""); // Limpiar variable temporal
                   }}
                 >
-                  Guardar
+                  Guardar y Cerrar
                 </Button>
               </ModalFooter>
             </ModalContent>

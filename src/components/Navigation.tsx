@@ -22,31 +22,43 @@ export function Navigation() {
             <SidebarLink icon={<FaSearch />} href={"selectByCode"}>
               Search by Code
             </SidebarLink>
+
             <Text fontWeight="black">Crear o modificar archivo</Text>
+            <SidebarLink icon={<FaPlusCircle />} href={"conexionBD"}>
+              Conexion con BD
+            </SidebarLink>
             <SidebarLink icon={<FaPlusCircle />} href={"newExercise"}>
               Crear ejercicio
             </SidebarLink>
+
             <SidebarLink icon={<FaPlusCircle />} href={"SebaAlternativas"}>
               Alternativas
             </SidebarLink>
+
             <SidebarLink icon={<FaPlusCircle />} href={"multiplaceholders"}>
               Multiplaceholder
             </SidebarLink>
+
             <SidebarLink icon={<FaWrench />} href={"selectByCode"}>
               Modificar ejercicio
             </SidebarLink>
+
             <SidebarLink icon={<FaWrench />} href={"jsonTransform"}>
             transformador Json 
             </SidebarLink>
+
             <SidebarLink icon={<FaWrench />} href={"previsualizar"}>
             Previsualizar 
             </SidebarLink>
+
             <SidebarLink icon={<FaPlusCircle />} href={"SebaModalGuardado"}>
             Testing
             </SidebarLink>
+
             <SidebarLink icon={<FaWrench />} href={"verJSON"}>
             Ver JSON
             </SidebarLink>
+
             <SidebarLink icon={<FaPlusCircle />} href={"SebaVyF"}>
             Verdadero y Falso
             </SidebarLink>

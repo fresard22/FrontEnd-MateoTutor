@@ -274,7 +274,10 @@ export default function NewExercise() {
       }
     }
   };
-
+  const handleChange = (event) => {
+    setSelectedTopic(event.target.value); // Actualiza el estado con el valor seleccionado
+    console.log("Valor seleccionado:", event.target.value); // Para depuración
+  };
   const toast = useToast();
   const [newCardType, setNewCardType] = useState("alternativas");
   const addCard = () => {
@@ -1505,7 +1508,8 @@ export default function NewExercise() {
                     <Text width="200px">Tópico del Ejercicio:</Text>
                     <Select
                       placeholder="Seleccione un Tópico"
-                      value={tempExerciseTopic}
+                      value={selectedTopic} // Vincula el valor al estado
+                      onChange={handleChange} // Maneja cambios en la selección
                     >
                       <option value="Factorización">Factorización</option>
                       <option value="Lógica y Conjuntos">

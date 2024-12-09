@@ -1,0 +1,241 @@
+1) CREAR CONTENIDO EN Mutation/adminProyects/createProyect
+la data es de tipo "CreateProyect"
+
+a) QUERY:
+
+mutation CreateProject($data: CreateProject!) {
+  adminProjects {
+    createProject(data: $data) {
+      id
+      code
+      label
+    }
+  }
+}
+
+b) VARIABLES:
+
+{
+  "data": {
+    "label": "Testeos-G7(2)",
+    "code": "tg7(2)",
+    "domains": 1
+  }
+}
+
+c) RESPUESTA ESPERADA:
+
+{
+  "data": {
+    "adminProjects": {
+      "createProject": {
+        "id": "9",
+        "label": "Test-G7",
+        "code": "tg7"
+      }
+    }
+  }
+}
+
+#####################################################################################################
+#####################################################################################################
+
+2) MODIFICAR CONTENIDO EXISTENTE EN Mutation/adminProyects/updateProyect
+a) QUERY:
+
+mutation UpdateProject($data: UpdateProject!) {
+  adminProjects {
+    updateProject(data: $data) {
+      id
+      code
+      label
+    }
+  }
+}
+
+b) VARIABLES:
+
+{
+  "data": {
+    "id": 9,
+    "code": "tg7",
+    "label": "Cambio",
+    "domains": "1"
+  }
+}
+
+c) RESPUESTA ESPERADA:
+
+{
+  "data": {
+    "adminProjects": {
+      "updateProject": {
+        "id": "9",
+        "code": "tg7",
+        "label": "Cambio"
+      }
+    }
+  }
+}
+
+#####################################################################################################
+#####################################################################################################
+
+1) CREAR CONTENIDO EN Mutation/adminContent/createContent
+la data es de tipo "CreateContent"
+
+a) QUERY:
+
+mutation CreateContent($data: CreateContent!) {
+  adminContent {
+    createContent(data: $data) {
+      code
+      description
+      id
+      json
+      label
+      project {
+        id
+      }
+    }
+  }
+}
+
+b) VARIABLES:
+
+{
+  "data": {
+    "code": "tg7",
+    "description": "Este es un contenido de prueba",
+    "json": {
+      "key1": "value1",
+      "key2": "value2"
+    },
+    "kcs": 1,
+    "label": "Testeos-G7",
+    "projectId": 9,
+    "tags": "",
+    "topics": 1
+  }
+}
+
+c) RESPUESTA ESPERADA:
+
+{
+  "data": {
+    "adminContent": {
+      "createContent": {
+        "code": "tg7(2)",
+        "description": "Este es un contenido de prueba(2)",
+        "id": "560",
+        "json": {
+          "key1": "value1",
+          "key2": "value2"
+        },
+        "label": "Testeos-G7(2)",
+        "project": {
+          "id": "9"
+        }
+      }
+    }
+  }
+}
+
+#####################################################################################################
+#####################################################################################################
+
+2) MODIFICAR CONTENIDO EXISTENTE EN Mutation/adminContent/updateContent
+a) QUERY:
+
+mutation UpdateContent($data: UpdateContent!) {
+  adminContent {
+    updateContent(data: $data) {
+      id
+      code
+      description
+      json
+      label
+      project {
+        id
+      }
+    }
+  }
+}
+
+
+b) VARIABLES:
+
+{
+  "data": {
+    "id": 556,
+    "code": "tg7",
+    "description": "Contenido de Prueba",
+    "json": {
+      "key1": "valor X",
+      "key2": "valor Y"
+    },
+    "kcs": 1,
+    "label": "Testeos-G7",
+    "projectId": 9,
+    "tags": "testeos",
+    "topics": 1
+  }
+}
+
+
+c) RESPUESTA ESPERADA:
+
+{
+  "data": {
+    "adminContent": {
+      "updateContent": {
+        "id": "556",
+        "code": "tg7",
+        "description": "Contenido de Prueba",
+        "json": {
+          "key1": "valor X",
+          "key2": "valor Y"
+        },
+        "label": "Testeos-G7",
+        "project": {
+          "id": "9"
+        }
+      }
+    }
+  }
+}
+
+#####################################################################################################
+#####################################################################################################
+
+1) Ver un JSON EN Query/content
+la data es de tipo "Content"
+
+a) QUERY:
+
+query GetJson($ids: [IntID!]!) {
+  content(ids: $ids) {
+    json
+  }
+}
+
+b) VARIABLES:
+
+{
+  "ids": [556]
+}
+
+c) RESPUESTA ESPERADA:
+
+{
+  "data": {
+    "content": [
+      {
+        "json": {
+          "key1": "valor X",
+          "key2": "valor Y"
+        }
+      }
+    ]
+  }
+}

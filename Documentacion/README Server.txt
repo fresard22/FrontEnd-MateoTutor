@@ -85,7 +85,8 @@ NOTAS:
 
 	[*] Para crear una nueva imagen:
 		Estando en el MISMO directorio del archivo "Docker", ejecutar en la terminal:
-			sudo docker build -t mtutor-img .
+			sudo docker build --no-cache -t mtutor-img:tag .
+
 
 ***************************************************************************************************************
 Ejecutar un NUEVO CONTAINER basado en una IMAGEN Docker
@@ -97,7 +98,7 @@ NOTA:
 	- Se pueden ejecutar simultaneamente distintos "contenedores" basados en una misma imagen
 
 [*] Ejecutar en la terminal:
-	sudo docker run --name MTutor-app -p 3007:3000 mtutor-img
+	sudo docker run --name MTutor-app -p 3007:3000 mtutor-img:tag
 
 	- 3007 Es el puerto de la maquina host (server)
 	- 3000 Es el puerto dentro del contenedor Docker
@@ -113,7 +114,7 @@ Comandos útiles DOCKER
 		sudo docker images
 
 	[*] Borrar una imagen EXISTENTE
-		sudo docker rmi mtutor-img:latest
+		sudo docker rmi mtutor-img:tag
 
 	[*] Ver TODOS los contenedores EXISTENTES
 		sudo docker ps -a
@@ -129,10 +130,3 @@ Comandos útiles DOCKER
 
 	[*] Eliminar un contenedor detenido
 		sudo docker rm Mateo
-
-***************************************************************************************************************
-CREDENCIALES para el LOGIN en MateoTutor
-***************************************************************************************************************
-
-nicole.navarro@alumnos.uach.cl
-123456

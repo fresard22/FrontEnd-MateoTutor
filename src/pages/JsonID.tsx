@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
+import { Box, Text } from '@chakra-ui/react';
 import { useAuth } from "../components/Auth";
 
 const TextInputPage: React.FC = () => {
   const [inputText, setInputText] = useState<string>('');
-  const [storedJson, setStoredJson] = useState<any>(null);
   const [displayText, setDisplayText] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);  
+  const [error, setError] = useState<string | null>(null);
+  const [inputId, setInputId] = useState<string>('');
   const { authorizationToken } = useAuth();
+
+  const [Code, setCode] = useState<string | null>(null);
+  const [Label, setLabel] = useState<string | null>(null);
+  const [KCS, setKCS] = useState<{ id: string }[] | null>(null);
+  const [ProjectId, setProjectId] = useState<number | null>(null);
+  const [Topics, setTopics] = useState<{ id: string }[] | null>(null);
+  const [Tags, setTags] = useState<string[] | null>(null);
+  const [Description, setDescription] = useState<string | null>(null);
+  const [storedJson, setJson] = useState<any>(null);
 
 // ############################################################################################################
 
@@ -28,6 +38,13 @@ const TextInputPage: React.FC = () => {
     }
   };
 
+  const handleIdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    if (/^\d*$/.test(value)) { // Solo permitir números
+      setInputId(value);
+    }
+  };
+
   const isValidJSON = (text: string): boolean => {
     try {
       JSON.parse(text);
@@ -40,6 +57,11 @@ const TextInputPage: React.FC = () => {
 // ############################################################################################################
 
   const handleSubirClick = async () => {
+    if (!inputId.trim()) {
+      setError('Debe ingresar un ID válido');
+      return;
+    }
+
     if (!inputText.trim()) {
       setError('El campo de texto está vacío');
       return;
@@ -69,25 +91,25 @@ const TextInputPage: React.FC = () => {
 
     const variables = {
       data: {
-        id: 556,
-        code: "tg7",
-        description: "Prueba 3",
-        json: JSON.parse(inputText), // Se usa el texto ingresado como el campo JSON
-        kcs: 1,
-        label: "Testeos-G7",
-        projectId: 9,
-        tags: "testeos",
-        topics: 1,
+        id: parseInt(inputId),
+        code: Code,
+        description: Description,
+        json: JSON.parse(inputText),
+        kcs: KCS ? KCS.map(item => parseInt(item.id)) : null,
+        label: Label,
+        projectId: ProjectId,
+        tags: Tags,
+        topics: Topics ? Topics.map(item => parseInt(item.id)) : null,
       },
     };
 
     try {
-      const token = getAuthorizationToken(); // Ahora obtenemos el token aquí de forma sincrónica
+      const token = getAuthorizationToken();
       const response = await fetch('https://lm.inf.uach.cl/graphql', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token, // Ahora pasamos el token directamente
+          'Authorization': token,
         },
         body: JSON.stringify({ query, variables }),
       });
@@ -99,7 +121,7 @@ const TextInputPage: React.FC = () => {
       }
 
       if (result.data.adminContent.updateContent) {
-        setStoredJson(result.data.adminContent.updateContent.json); // Guardar el JSON actualizado
+        setJson(result.data.adminContent.updateContent.json);
         setInputText('¡JSON subido!');
       } else {
         throw new Error('No se pudo actualizar el JSON');
@@ -114,28 +136,40 @@ const TextInputPage: React.FC = () => {
 // ############################################################################################################
 
   const handleRecuperarClick = async () => {
+    if (!inputId.trim()) {
+      setError('Debe ingresar un ID válido');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     const query = `
-      query GetJson($ids: [IntID!]!) {
+      query getContent($ids: [IntID!]!) {
         content(ids: $ids) {
-          json
+            code
+            label
+            kcs {id}
+            project {id}
+            topics {id}
+            tags
+            description
+            json
         }
       }
     `;
 
     const variables = {
-      ids: [556],
+      ids: parseInt(inputId),
     };
 
     try {
-      const token = getAuthorizationToken(); // Ahora obtenemos el token aquí de forma sincrónica
+      const token = getAuthorizationToken();
       const response = await fetch('https://lm.inf.uach.cl/graphql', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token, // Ahora pasamos el token directamente
+          'Authorization': token,
         },
         body: JSON.stringify({ query, variables }),
       });
@@ -147,9 +181,19 @@ const TextInputPage: React.FC = () => {
       }
 
       if (result.data.content && result.data.content.length > 0) {
-        const contentJson = result.data.content[0].json;
-        setStoredJson(contentJson);
-        setDisplayText(JSON.stringify(contentJson, null, 2));
+        const contentData = result.data.content[0];
+      
+      // Almacenar cada dato individualmente
+        setCode(contentData.code);
+        setLabel(contentData.label);
+        setKCS(contentData.kcs);
+        setProjectId(contentData.project.id);
+        setTopics(contentData.topics);
+        setTags(contentData.tags);
+        setDescription(contentData.description);
+        setJson(contentData.json);
+
+        setDisplayText(JSON.stringify(contentData.json, null, 2));
       } else {
         setDisplayText('No se encontró contenido');
       }
@@ -164,12 +208,23 @@ const TextInputPage: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px' }}>
+        <label htmlFor="idInput" style={{ marginRight: '10px', fontWeight: 'bold' }}>Ingrese ID:</label>
+        <input
+          id="idInput"
+          type="text"
+          value={inputId}
+          onChange={handleIdChange}
+          style={{ width: '100px', padding: '5px', border: '1px solid black', textAlign: 'center' }}
+        />
+      </div>
       <div>
         <input
           type="text"
           value={inputText}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
+          placeholder="Ingrese texto en formato JSON"
           style={{ width: '300px', padding: '10px', marginBottom: '10px', border: '1px solid black' }}
         />
       </div>
@@ -186,8 +241,10 @@ const TextInputPage: React.FC = () => {
           {error}
         </div>
       )}
-      <div style={{ width: '300px', marginTop: '20px', padding: '10px', border: '1px solid black', textAlign: 'center', whiteSpace: 'pre-wrap' }}>
-        {displayText}
+      <div>
+        <Box as="pre" bg="gray.100" p={4} borderRadius="md" overflow="auto" maxW="1050px">
+          {displayText}
+        </Box>
       </div>
     </div>
   );

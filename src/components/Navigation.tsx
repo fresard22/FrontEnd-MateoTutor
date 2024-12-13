@@ -24,17 +24,17 @@ export function Navigation() {
             </SidebarLink>
 
             <Text fontWeight="black">Crear o modificar archivo</Text>
-            <SidebarLink icon={<FaPlusCircle />} href={"conexionBD"}>
-              Conexion con BD
+            <SidebarLink icon={<FaSearch />} href={"JsonID"}>
+              Obtener JSON mediante "ID"
             </SidebarLink>
+
+            <SidebarLink icon={<FaSearch />} href={"JsonCode"}>
+              Obtener JSON mediante "Code"
+            </SidebarLink>
+
             <SidebarLink icon={<FaPlusCircle />} href={"newExercise"}>
               Crear ejercicio
             </SidebarLink>
-
-            <SidebarLink icon={<FaWrench />} href={"verJSON"}>
-            Ver JSON
-            </SidebarLink>
-
           </>
         )}
       </Stack>

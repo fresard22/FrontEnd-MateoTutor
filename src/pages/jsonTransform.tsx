@@ -30,8 +30,8 @@ export function generarEjercicioJSON(cards: any[], code:string, title: string) {
       })),
       values: stepTypeMapping[card.type] === "Alternatives" ? card.alternatives.map((alternative: any) => ({ 
         name: alternative.text || [], // nombre de la alternativa, aun que en la implementacion no se utiliza lo dejo aqui asi para futuro
-        value: alternative.text || [], // valor de la alternativa, es el contenido este es el que se utiliza para verificar cual es la correcta
-        latex: "prueba de latex para alternativalol"
+        value: alternative.text || [] // valor de la alternativa, es el contenido este es el que se utiliza para verificar cual es la correcta
+        
       }))//true or false no lo ocupa sin embargo hay ejercicios que si lo tienen, multiplaceholder tampoco, single placeholder tampoco y table tampoco
       || []: card.values,
       /*

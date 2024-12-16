@@ -18,12 +18,12 @@ export function Navigation() {
         </SidebarLink>
         {user && admin && (
           <>
-            <Text fontWeight="black">Selección por Código</Text>
+            <Text fontWeight="black">Visualizar Ejercicio</Text>
             <SidebarLink icon={<FaSearch />} href={"selectByCode"}>
-              Search by Code
+              Obtener ejercicio mediante "Code"
             </SidebarLink>
 
-            <Text fontWeight="black">Crear o modificar archivo</Text>
+            <Text fontWeight="black">Archivos JSON</Text>
             <SidebarLink icon={<FaSearch />} href={"JsonID"}>
               Obtener JSON mediante "ID"
             </SidebarLink>
@@ -32,6 +32,7 @@ export function Navigation() {
               Obtener JSON mediante "Code"
             </SidebarLink>
 
+            <Text fontWeight="black">Creación</Text>
             <SidebarLink icon={<FaPlusCircle />} href={"newExercise"}>
               Crear ejercicio
             </SidebarLink>

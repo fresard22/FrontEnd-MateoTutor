@@ -72,38 +72,49 @@ const TextInputPage: React.FC = () => {
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
-    const query = `
-      mutation UpdateContent($data: UpdateContent!) {
-        adminContent {
-          updateContent(data: $data) {
-            id
-            json
-            project {
+    try {
+      // Ejecutar la lógica de recuperación
+      await handleRecuperarClick();
+  
+      // Esperar hasta que el estado esté completamente actualizado
+      await new Promise((resolve) => setTimeout(resolve, 0));
+  
+      // Validar que las variables necesarias estén listas
+      if (!Code || !Label || !ProjectId || !Description || !KCS || !Topics || !Tags) {
+        throw new Error('Haz click nuevamente en "Subir"');
+      }
+  
+      setLoading(true);
+      setError(null);
+      
+      const query = `
+        mutation UpdateContent($data: UpdateContent!) {
+          adminContent {
+            updateContent(data: $data) {
               id
+              json
+              project {
+                id
+              }
             }
           }
         }
-      }
-    `;
-
-    const variables = {
-      data: {
-        id: parseInt(inputId),
-        code: Code,
-        description: Description,
-        json: JSON.parse(inputText),
-        kcs: KCS ? KCS.map(item => parseInt(item.id)) : null,
-        label: Label,
-        projectId: ProjectId,
-        tags: Tags,
-        topics: Topics ? Topics.map(item => parseInt(item.id)) : null,
-      },
-    };
-
-    try {
+      `;
+  
+      const variables = {
+        data: {
+          id: parseInt(inputId),
+          code: Code,
+          description: Description || '',
+          json: JSON.parse(inputText),
+          kcs: KCS ? KCS.map(item => parseInt(item.id)) : [],
+          label: Label,
+          projectId: ProjectId,
+          tags: Tags || [],
+          topics: Topics ? Topics.map(item => parseInt(item.id)) : [],
+        },
+      };
+  
       const token = getAuthorizationToken();
       const response = await fetch('https://lm.inf.uach.cl/graphql', {
         method: 'POST',
@@ -113,13 +124,13 @@ const TextInputPage: React.FC = () => {
         },
         body: JSON.stringify({ query, variables }),
       });
-
+  
       const result = await response.json();
-
+  
       if (result.errors) {
         throw new Error(result.errors[0]?.message || 'Error desconocido');
       }
-
+  
       if (result.data.adminContent.updateContent) {
         setJson(result.data.adminContent.updateContent.json);
         setInputText('¡JSON subido!');
